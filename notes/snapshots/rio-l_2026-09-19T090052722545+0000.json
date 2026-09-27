@@ -1,0 +1,273 @@
+{
+  "schema": "uk-equity-note/2",
+  "ticker": "RIO.L",
+  "name": "Rio Tinto",
+  "status": "published",
+  "analyst": "system",
+  "created_at": "2026-09-19T09:00:52.701500+00:00",
+  "published_at": "2026-09-19T09:00:52.722545+00:00",
+  "published_by": "auto_notes",
+  "headline": "BUY: target GBP 518.11 vs price GBP 72.18 (+617.8% upside) on blended DCF/DDM/comps",
+  "thesis": {
+    "summary": "Systematic note generated from live data. Market price GBP 72.18 against a blended 12-month target of GBP 518.11 (weights {'ddm': 0.4, 'comps_pe': 0.4, 'comps_ev_ebitda': 0.2}). The 2-stage FCF DCF on a base of GBP nanm latest-FY free cash flow (FX-converted from USD) values the shares at GBP nan. Gordon DDM on trailing DPS GBP 4.57 (g = ROE x retention) values them at GBP 139.57. Peer-median P/E of 177.1x applied to EPS of GBP 5.93 implies GBP 1050.47. Reported FCF has trended down over the last 4 financial years (GBP 7,006m -> GBP nanm), which drives the growth path shown in the inputs table.",
+    "catalysts": [
+      "Convergence toward the blended target of GBP 518.11 (+617.8%) over the 3-month review window",
+      "Next FY results: reported FCF vs the latest-FY base used in the DCF"
+    ],
+    "risks": [
+      "Thesis invalidation: price sustaining beyond GBP 518.11 in the opposite direction of the recommendation for 10+ sessions",
+      "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
+      "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
+    ]
+  },
+  "recommendation": "BUY",
+  "price_target_gbp": 518.11,
+  "target_weights": {
+    "ddm": 0.4,
+    "comps_pe": 0.4,
+    "comps_ev_ebitda": 0.2
+  },
+  "upside_pct": 617.8,
+  "valuation_inputs": {
+    "dcf": {
+      "base_fcf_m": NaN,
+      "fcf_growth_path": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ],
+      "terminal_growth": 0.025,
+      "wacc": 0.0785044,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.664; implied pre-tax kd 8.3% disclosed only",
+      "net_debt_m": 10810.456338036192,
+      "shares_m": 1254.609242,
+      "result": {
+        "value_per_share": NaN,
+        "pv_explicit_m": NaN,
+        "pv_terminal_m": NaN,
+        "equity_value_m": NaN,
+        "projections": [
+          {
+            "year": 1,
+            "growth": NaN,
+            "fcf_m": NaN,
+            "pv_m": NaN
+          },
+          {
+            "year": 2,
+            "growth": NaN,
+            "fcf_m": NaN,
+            "pv_m": NaN
+          },
+          {
+            "year": 3,
+            "growth": NaN,
+            "fcf_m": NaN,
+            "pv_m": NaN
+          },
+          {
+            "year": 4,
+            "growth": NaN,
+            "fcf_m": NaN,
+            "pv_m": NaN
+          },
+          {
+            "year": 5,
+            "growth": NaN,
+            "fcf_m": NaN,
+            "pv_m": NaN
+          }
+        ]
+      },
+      "derivation": [
+        "growth: FCF CAGR +nan% over 3y, 50% damped -> +nan% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)",
+        "terminal g = min(rf 4.99%, explicit CAGR/2) = 2.50%",
+        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.664; implied pre-tax kd 8.3% disclosed only",
+        "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "ke = 4.99% + 0.66 x 4.31% = 7.85%"
+      ]
+    },
+    "ddm": {
+      "dps_ttm_gbp": 4.5701231,
+      "roe": 0.19312,
+      "payout": 0.7705663484526976,
+      "ke": 0.0785044,
+      "g": 0.0443,
+      "value_per_share": 139.5658,
+      "derivation": [
+        "g = ROE 19.3% x retention 23% = 4.43%",
+        "D1 = DPS TTM 4.57 x (1+g) = 4.77",
+        "value = D1 / (ke 7.85% - g 4.43%) = 139.57"
+      ]
+    },
+    "comps": {
+      "entries": [
+        {
+          "peer": "BHP",
+          "ev_ebitda": 9.692741229099582,
+          "pe": 29.864445111525114
+        },
+        {
+          "peer": "VALE",
+          "ev_ebitda": 43.89742541708053,
+          "pe": 177.1189930535596
+        },
+        {
+          "peer": "GLNCY",
+          "ev_ebitda": 14.898735923732104,
+          "pe": 323.34168241175274
+        },
+        {
+          "peer": "AAL.L",
+          "ev_ebitda": 16.02698008936806,
+          "pe": null
+        }
+      ],
+      "median_ev_ebitda": 16.02698008936806,
+      "median_pe": 177.1189930535596,
+      "implied_price_pe": 1050.47,
+      "implied_price_ev_ebitda": 210.51,
+      "derivation": [
+        "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+        "P/E leg: median 177.1x x EPS 5.93 = 1050.47",
+        "EV/EBITDA leg: median 16.0x x EBITDA 17,153m - net debt 10,810m = equity 264,102m / 1,255m shares = 210.51"
+      ]
+    }
+  },
+  "market_context": {
+    "price_gbp_at_publication": 72.18,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "LSE quotes GBp; converted to GBP"
+  },
+  "provenance": {
+    "fx": {
+      "source": "Yahoo Finance FX (yfinance)",
+      "retrieved_at": "2026-09-19T09:00:45.355954+00:00",
+      "derivation": "1 USD = 0.7466 GBP (spot GBPUSD=X inverted)",
+      "url": ""
+    },
+    "income_statement": {
+      "source": "Yahoo Finance income_stmt (latest FY)",
+      "retrieved_at": "2026-09-19T09:00:45.607599+00:00",
+      "derivation": "converted USD->GBP at spot"
+    },
+    "cash_flow": {
+      "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
+      "retrieved_at": "2026-09-19T09:00:45.829130+00:00",
+      "derivation": "FCF = OCF + capex (capex negative), USD->GBP"
+    },
+    "balance_sheet": {
+      "source": "Yahoo Finance balance_sheet (latest FY)",
+      "retrieved_at": "2026-09-19T09:00:46.176417+00:00",
+      "derivation": "net debt = total debt - cash & ST investments"
+    },
+    "dividends": {
+      "source": "Yahoo Finance Ticker.dividends (actual payments)",
+      "retrieved_at": "2026-09-19T09:00:46.534259+00:00",
+      "derivation": "DPS TTM = sum of payments dated within 365d (457.0123 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
+    },
+    "risk_free_rate": {
+      "source": "OECD long-term govt bond yield via FRED",
+      "retrieved_at": "2026-09-19T09:00:47.017695+00:00",
+      "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+    },
+    "cost_of_equity": [
+      {
+        "source": "OECD long-term govt bond yield via FRED",
+        "retrieved_at": "2026-09-19T09:00:46.888558+00:00",
+        "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+      },
+      {
+        "source": "Damodaran country risk premium (Western Europe)",
+        "retrieved_at": "2026-09-19T09:00:46.888558+00:00",
+        "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "url": "https://pages.stern.nyu.edu/~adamodar/"
+      },
+      {
+        "source": "CAPM",
+        "retrieved_at": "2026-09-19T09:00:46.888558+00:00",
+        "derivation": "ke = 4.99% + 0.66 x 4.31% = 7.85%"
+      }
+    ],
+    "peer_multiples": [
+      "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+      "P/E leg: median 177.1x x EPS 5.93 = 1050.47",
+      "EV/EBITDA leg: median 16.0x x EBITDA 17,153m - net debt 10,810m = equity 264,102m / 1,255m shares = 210.51"
+    ],
+    "blend": [
+      "blend: ddm 139.57 x 40%",
+      "blend: comps_pe 1050.47 x 40%",
+      "blend: comps_ev_ebitda 210.51 x 20%"
+    ],
+    "model_choices": {
+      "dcf_weight": 0.6,
+      "ddm_weight": 0.2,
+      "comps_weight": 0.2,
+      "growth_damping": "50% toward 0, floor/cap -5%/+15%",
+      "terminal_g_rule": "min(rf, explicit CAGR/2)",
+      "recommendation_bands": "BUY >= +15% upside, SELL <= -15%, else HOLD"
+    }
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:48:08.106422+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "RIO.L"
+      ],
+      "status": "ok",
+      "currency": "USD",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T08:48:08.211537+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "RIO.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.1
+    },
+    {
+      "ts": "2026-09-19T08:51:08.433102+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "RIO.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.22
+    },
+    {
+      "ts": "2026-09-19T09:00:46.536783+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "RIO.L"
+      ],
+      "status": "ok",
+      "currency": "USD",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:00:46.755908+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "RIO.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.19
+    }
+  ],
+  "benchmark": "^FTSE",
+  "review_period_months": 3,
+  "review_due_at": "2026-09-19T09:00:52.721543+00:00",
+  "addenda": [],
+  "publication_audit_id": "2026-09-19T09:00:52.721543+00:00"
+}

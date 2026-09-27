@@ -1,0 +1,180 @@
+{
+  "schema": "uk-equity-note/1",
+  "ticker": "ULVR.L",
+  "name": "Unilever",
+  "status": "published",
+  "analyst": "demo",
+  "created_at": "2026-09-19T08:28:51.170175+00:00",
+  "published_at": "2026-09-19T08:28:51.265679+00:00",
+  "thesis": {
+    "summary": "Unilever's brand portfolio and margin programme are genuine, but the shares already screen at a premium to staples peers on underlying sales growth that remains below 4%. Fair value sits close to the market price: HOLD pending evidence of volume-led growth acceleration.",
+    "catalysts": [
+      "Quarterly underlying sales growth above 4% with volume mix",
+      "Faster-than-guided productivity savings"
+    ],
+    "risks": [
+      "Emerging-market currency drag on reported growth",
+      "Private-label share gains in Europe"
+    ]
+  },
+  "valuation_inputs": {
+    "dcf": {
+      "ticker": "ULVR.L",
+      "base_fcf_m": 6800.0,
+      "fcf_growth": [
+        0.035,
+        0.035,
+        0.03,
+        0.03,
+        0.03
+      ],
+      "terminal_growth": 0.025,
+      "wacc": 0.075,
+      "net_debt_m": 24000.0,
+      "shares_m": 2450.0
+    },
+    "dcf_result": {
+      "pv_explicit": 30220.997565576174,
+      "pv_terminal": 113661.35423498548,
+      "enterprise_value_m": 143882.35180056165,
+      "equity_value_m": 119882.35180056165,
+      "value_per_share": 48.93157216349455,
+      "projections": [
+        {
+          "year": 1,
+          "growth": 0.035,
+          "fcf_m": 7038.0,
+          "pv_m": 6547.0
+        },
+        {
+          "year": 2,
+          "growth": 0.035,
+          "fcf_m": 7284.3,
+          "pv_m": 6303.4
+        },
+        {
+          "year": 3,
+          "growth": 0.03,
+          "fcf_m": 7502.9,
+          "pv_m": 6039.5
+        },
+        {
+          "year": 4,
+          "growth": 0.03,
+          "fcf_m": 7727.9,
+          "pv_m": 5786.7
+        },
+        {
+          "year": 5,
+          "growth": 0.03,
+          "fcf_m": 7959.8,
+          "pv_m": 5544.5
+        }
+      ]
+    },
+    "comps": [
+      {
+        "peer": "P&G",
+        "ev_ebitda": null,
+        "pe": 22.0,
+        "notes": ""
+      },
+      {
+        "peer": "Colgate",
+        "ev_ebitda": null,
+        "pe": 24.0,
+        "notes": ""
+      },
+      {
+        "peer": "Reckitt",
+        "ev_ebitda": null,
+        "pe": 19.0,
+        "notes": ""
+      },
+      {
+        "peer": "Danone",
+        "ev_ebitda": null,
+        "pe": 18.0,
+        "notes": ""
+      }
+    ],
+    "comps_result": {
+      "peer_median_ev_ebitda": null,
+      "peer_median_pe": 22.0,
+      "implied_ev_ebitda_m": null,
+      "implied_pe_price": 56.57142857142857
+    },
+    "blended_target": 51.99,
+    "weights": {
+      "dcf": 0.6,
+      "comps_0": 0.4
+    },
+    "units": "GBP; shares in millions"
+  },
+  "market_context": {
+    "price_gbp_at_draft": 46.21,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "converted from LSE GBp quotes"
+  },
+  "recommendation": "HOLD",
+  "data_sources": {
+    "prices": "Yahoo Finance via yfinance (daily + intraday snapshots)",
+    "fundamentals": "Yahoo Finance via yfinance Ticker.info / financials",
+    "benchmark": "Yahoo Finance ^FTSE daily closes"
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:28:08.787602+00:00",
+      "event": "fetch_info",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "keys": 24
+    },
+    {
+      "ts": "2026-09-19T08:28:08.958247+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.17
+    },
+    {
+      "ts": "2026-09-19T08:28:09.044289+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.09
+    },
+    {
+      "ts": "2026-09-19T08:28:51.168632+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.19
+    },
+    {
+      "ts": "2026-09-19T08:28:51.249624+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.08
+    }
+  ],
+  "benchmark": "^FTSE",
+  "tracked_vs": "FTSE 100, 3-month rolling",
+  "published_by": "demo_seed",
+  "publication_audit_id": "2026-09-19T08:28:51.264674+00:00"
+}

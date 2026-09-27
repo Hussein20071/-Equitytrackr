@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="BP (BP.L): HOLD: target GBP 5.77 vs price GBP 5.59 (+3.3% upside) on blended DCF/DDM/comps">
+<title>BP (BP.L) — Research Note</title>
+<style>
+  :root { --navy:#0f3460; --pos:#047857; --neg:#b91c1c; }
+  * { box-sizing:border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; background:#f4f6fa; color:#16233b; }
+  .band { background: linear-gradient(135deg, #0f3460, #1e3a6e); color:#fff; padding:26px 20px 22px; }
+  .band-inner { max-width:900px; margin:0 auto; }
+  .band h1 { margin:0; font-size:27px; letter-spacing:-0.02em; }
+  .band .tick { color:#9fb4d8; font-weight:600; }
+  main { max-width:900px; margin:0 auto; padding:20px; }
+  .sumcard { background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 2px 6px rgba(15,23,42,0.07); padding:18px 20px; margin-top:-34px; position:relative; }
+  .sumgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-top:6px; }
+  .sumgrid .cell { border:1px solid #edf1f7; border-radius:10px; padding:9px 12px; }
+  .sumgrid .l { font-size:10.5px; color:#8593aa; text-transform:uppercase; letter-spacing:0.05em; }
+  .sumgrid .v { font-size:19px; font-weight:750; color:var(--navy); margin-top:2px; }
+  .headline { font-size:15.5px; color:#33415c; margin:12px 0 2px; }
+  h2 { font-size:16px; color:var(--navy); border-bottom:2px solid var(--navy); padding-bottom:4px; margin-top:30px; }
+  h3 { font-size:13.5px; margin-bottom:4px; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; font-size:13.5px; background:#fff; }
+  th, td { border:1px solid #d7dee9; padding:6px 9px; text-align:left; vertical-align:top; }
+  th { background:#eef2f8; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; color:#51617a; }
+  .badge { display:inline-block; padding:4px 14px; border-radius:999px; font-weight:800; letter-spacing:0.04em; }
+  .pos { color:var(--pos); font-weight:600; }
+  .neg { color:var(--neg); font-weight:600; }
+  .zero { color:#5b6b83; }
+  .btns { display:flex; gap:10px; margin:12px 0 0; }
+  .btn { border:1px solid #cbd5e1; background:#fff; color:var(--navy); font-weight:700; font-size:13px; padding:8px 14px; border-radius:8px; cursor:pointer; }
+  .btn:hover { background:#eef2f8; }
+  .chartbox { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; margin:14px 0; }
+  .chartbox canvas { max-height:260px; width:100%; }
+  ul { padding-left:20px; }
+  .disclaimer { color:#6b7a93; font-size:12px; border-top:1px solid #d7dee9; margin-top:30px; padding-top:12px; }
+  .muted { color:#6b7a93; font-size:12.5px; }
+  @media print {
+    body { background:#fff; }
+    .band { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .btns { display:none; }
+    .sumcard { box-shadow:none; margin-top:10px; }
+    h2 { page-break-after: avoid; }
+    table, ul { page-break-inside: avoid; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="band"><div class="band-inner">
+  <h1>BP <span class="tick">(BP.L)</span></h1>
+  <div style="margin-top:6px"><span class="badge" style="background:#eef2ff;color:#4338ca">HOLD</span>
+  <span style="margin-left:8px;font-size:13.5px;color:#c7d4ea">Equity research note · FTSE 100 · thesis dated 2026-09-19</span></div>
+</div></div>
+<main>
+<div class="sumcard">
+  <div class="headline">HOLD: target GBP 5.77 vs price GBP 5.59 (+3.3% upside) on blended DCF/DDM/comps</div>
+  <div class="sumgrid">
+    <div class="cell"><div class="l">Price target</div><div class="v">5.77</div></div>
+    <div class="cell"><div class="l">Upside</div><div class="v"><span class="pos">+3.28%</span></div></div>
+    <div class="cell"><div class="l">Price at pub.</div><div class="v">5.59</div></div>
+    <div class="cell"><div class="l">Alpha so far</div><div class="v"><span class="pos">+3.28%</span></div></div>
+    <div class="cell"><div class="l">Review window</div><div class="v">3m</div></div>
+    <div class="cell"><div class="l">Audit id</div><div class="v" style="font-size:11px;font-weight:600">2026-09-19T09:32:46</div></div>
+  </div>
+  <div class="btns no-print">
+    <button class="btn" onclick="window.print()">Download PDF</button>
+    <button class="btn" onclick="navigator.clipboard.writeText(location.href).then(()=>this.textContent='Link copied!').catch(()=>this.textContent='Copy failed')">Copy share link</button>
+  </div>
+</div>
+
+<div class="chartbox">
+  <h3 style="margin:2px 0 8px">Stock vs FTSE 100 since thesis (indexed to 100)</h3>
+  <canvas id="pxchart" height="240"></canvas>
+  <div class="muted">5 closes plotted.</div>
+</div>
+
+<h2>Thesis</h2>
+<p>Systematic note generated from live data. Market price GBP 5.59 against a blended 12-month target of GBP 5.77 (weights {&#x27;dcf&#x27;: 0.857, &#x27;comps_ev_ebitda&#x27;: 0.143}). The 2-stage FCF DCF on a base of GBP 8,415m latest-FY free cash flow (FX-converted from USD) values the shares at GBP 5.65. Peer-median P/E of 15.3x applied to EPS of GBP 0.00 implies GBP 0.04. Reported FCF has trended down over the last 4 financial years (GBP 21,547m -&gt; GBP 8,415m), which drives the growth path shown in the inputs table.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div><h3>Catalysts</h3><ul><li>Convergence toward the blended target of GBP 5.77 (+3.3%) over the 3-month review window</li><li>Next FY results: reported FCF vs the latest-FY base used in the DCF</li></ul></div>
+  <div><h3>Risks</h3><ul><li>Thesis invalidation: price sustaining beyond GBP 5.77 in the opposite direction of the recommendation for 10+ sessions</li><li>Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs</li><li>Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield</li></ul></div>
+</div>
+
+<h2>Valuation inputs (frozen at publication)</h2>
+<table>
+  <tr><th>Input</th><th>Value</th><th>Derivation / source</th></tr>
+  <tr><td><strong>Base FCF (latest FY)</strong></td><td>8,414.8 GBPm</td><td>Yahoo cash_flow: OCF − capex, FX-converted to GBP</td></tr><tr><td><strong>FCF growth path</strong></td><td>[-0.05, -0.025, 0.0, 0.0, 0.0]</td><td>growth: FCF CAGR -26.9% over 3y, 50% damped -&gt; -5.0% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)</td></tr><tr><td><strong>Terminal growth</strong></td><td>0.0</td><td>terminal g = min(rf 4.99%, explicit CAGR/2) = 0.00%</td></tr><tr><td><strong>WACC (= ke, CAPM)</strong></td><td>0.0757</td><td>WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.5980000000000001; implied pre-tax kd 8.8% disclosed only</td></tr><tr><td><strong>Net debt</strong></td><td>15,859.1 GBPm</td><td>Balance sheet: total debt − cash &amp; ST investments</td></tr><tr><td><strong>Shares outstanding</strong></td><td>15,452.4 m</td><td>Yahoo sharesOutstanding</td></tr><tr><td><strong>DCF value/share</strong></td><td>5.65</td><td>2-stage FCF DCF</td></tr><tr><td><strong>DDM value/share</strong></td><td>–</td><td>DDM skipped: g=-1034.09% not &lt; ke*0.9=6.81%</td></tr><tr><td><strong>Comps: median P/E</strong></td><td>15.3x</td><td>multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E &lt;= 60x, EV/EBITDA &lt;= 30x)</td></tr><tr><td><strong>Comps implied (P/E)</strong></td><td>0.04</td><td>peer median x derived EPS (suppressed if earnings depressed)</td></tr><tr><td><strong>Comps implied (EV/EBITDA)</strong></td><td>6.51</td><td>peer median x EBITDA, less net debt</td></tr><tr><td><strong>Blended 12m target</strong></td><td><strong>5.77 GBP</strong></td><td>weights {&amp;#x27;dcf&amp;#x27;: 0.857, &amp;#x27;comps_ev_ebitda&amp;#x27;: 0.143}</td></tr>
+</table>
+
+<h2>Peer comparables (live)</h2><table><tr><th>Peer</th><th>EV/EBITDA</th><th>P/E</th></tr><tr><td>SHEL.L</td><td>5.1</td><td>15.2</td></tr><tr><td>TTE.PA</td><td>6.0</td><td>15.3</td></tr><tr><td>EQNR.OL</td><td>3.0</td><td>20.9</td></tr></table>
+
+<h2>Tracked performance vs FTSE 100</h2><table><tr><th>Thesis date</th><th>Tracked</th><th>Price path</th><th>Return</th><th>FTSE</th><th>Alpha</th><th>Ann. vol</th><th>Max DD</th></tr><tr><td>2026-09-21</td><td>4d / 5td</td><td>5.43 → 5.58</td><td><span class="pos">+2.87%</span></td><td><span class="neg">-0.41%</span></td><td><span class="pos">+3.28%</span></td><td><span class="pos">+38.55%</span></td><td><span class="neg">-2.33%</span></td></tr></table>
+<h2>Monthly attribution vs FTSE 100</h2><table><tr><th>Month</th><th>Stock</th><th>FTSE 100</th><th>Alpha</th></tr><tr><td>2026-09</td><td><span class="pos">+2.87%</span></td><td><span class="neg">-0.41%</span></td><td><span class="pos">+3.28%</span></td></tr></table>
+
+
+<h2>Data sources & provenance</h2>
+<table>
+  <tr><th>Input</th><th>Source</th><th>Derivation</th><th>Retrieved (UTC)</th></tr>
+  <tr><td>fx</td><td>Yahoo Finance FX (yfinance)</td><td>1 USD = 0.7465 GBP (spot GBPUSD=X inverted)</td><td>2026-09-19T09:18:03</td></tr><tr><td>income_statement</td><td>Yahoo Finance income_stmt (latest FY)</td><td>converted USD-&gt;GBP at spot</td><td>2026-09-19T09:18:03</td></tr><tr><td>cash_flow</td><td>Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)</td><td>FCF = OCF + capex (capex negative), USD-&gt;GBP</td><td>2026-09-19T09:18:03</td></tr><tr><td>balance_sheet</td><td>Yahoo Finance balance_sheet (latest FY)</td><td>net debt = total debt - cash &amp; ST investments</td><td>2026-09-19T09:18:03</td></tr><tr><td>dividends</td><td>Yahoo Finance Ticker.dividends (actual payments)</td><td>DPS TTM = sum of payments dated within 365d (31.2499 in listing units, GBp-&gt;GBP /100); payout = DPS/eps where eps = NI/shares</td><td>2026-09-19T09:18:03</td></tr><tr><td>risk_free_rate</td><td>OECD long-term govt bond yield via FRED</td><td>IRLTLT01GBM156N latest obs 2026-08-01: 4.99%</td><td>2026-09-19T09:32:46</td></tr><tr><td>cost_of_equity</td><td>OECD long-term govt bond yield via FRED</td><td>IRLTLT01GBM156N latest obs 2026-08-01: 4.99%</td><td>2026-09-19T09:32:45</td></tr><tr><td>cost_of_equity</td><td>Damodaran country risk premium (Western Europe)</td><td>ERP 4.31% (Jan 2025 dataset, mature Western Europe)</td><td>2026-09-19T09:32:45</td></tr><tr><td>cost_of_equity</td><td>CAPM</td><td>ke = 4.99% + 0.60 x 4.31% = 7.57%</td><td>2026-09-19T09:32:45</td></tr><tr><td>cost_of_equity</td><td>Blume (1971) beta adjustment + 0.40 beta floor</td><td>beta raw -0.22 floored at 0.40 -&gt; adjusted 0.60 (0.67*raw + 0.33)</td><td>2026-09-19T09:32:45</td></tr><tr><td>peer_multiples</td><td colspan='3'>multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E &lt;= 60x, EV/EBITDA &lt;= 30x)</td></tr><tr><td>peer_multiples</td><td colspan='3'>P/E leg: median 15.3x x EPS 0.00 = 0.04</td></tr><tr><td>peer_multiples</td><td colspan='3'>EV/EBITDA leg: median 5.1x x EBITDA 22,915m - net debt 15,859m = equity 100,547m / 15,452m shares = 6.51</td></tr><tr><td>peer_multiples</td><td colspan='3'>P/E leg suppressed: subject trailing earnings base depressed (EPS GBP 0.0026570972394862956, implied trailing P/E 2103x); peer multiples not applied</td></tr><tr><td>blend</td><td colspan='3'>blend: dcf 5.65 x 86%</td></tr><tr><td>blend</td><td colspan='3'>blend: comps_ev_ebitda 6.51 x 14%</td></tr>
+</table>
+<h3>Model choices (disclosed, not data)</h3>
+<ul><li><code>dcf_weight</code> = 0.6</li><li><code>ddm_weight</code> = 0.2</li><li><code>comps_weight</code> = 0.2</li><li><code>growth_damping</code> = 50% toward 0, floor/cap -5%/+15%</li><li><code>terminal_g_rule</code> = min(rf, explicit CAGR/2)</li><li><code>recommendation_bands</code> = BUY &gt;= +15% upside, SELL &lt;= -15%, else HOLD</li></ul>
+
+<h2>How this note was built</h2>
+<p class="muted">Generated from live public data by <code>tracker/auto_notes.py</code>:
+fundamentals via yfinance (statements FX-converted to GBP at spot), risk-free rate
+from FRED (<code>IRLTLT01GBM156N</code>), ERP from Damodaran (Western Europe 4.31%,
+Jan 2025 vintage), CAPM cost of equity with Blume-adjusted beta, peer multiples
+computed from live prices and statements. The full fetch trail is in
+<code>data/audit_log.jsonl</code> (audit id <code>2026-09-19T09:32:46.134394+00:00</code>).</p>
+
+<div class="disclaimer">Educational project. Not investment advice. Data may be delayed or inaccurate; verify independently before acting on anything here.</div>
+</main>
+<script>const series = [{"date": "2026-09-21", "stock": 100.0, "bench": 100.0}, {"date": "2026-09-22", "stock": 99.89, "bench": 99.71}, {"date": "2026-09-23", "stock": 102.63, "bench": 99.69}, {"date": "2026-09-24", "stock": 105.32, "bench": 99.45}, {"date": "2026-09-25", "stock": 102.87, "bench": 99.59}];
+if (series.length > 1) { new Chart(document.getElementById('pxchart'), {type: 'line', data: { labels: series.map(p => p.date), datasets: [{ label: 'Stock (indexed 100)', data: series.map(p => p.stock), borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59,130,246,0.08)', pointRadius: 0, borderWidth: 2, tension: 0.15 },{ label: 'FTSE 100 (indexed 100)', data: series.map(p => p.bench), borderColor: '#94a3b8', borderDash: [6,4], pointRadius: 0, borderWidth: 1.5, tension: 0.15 }] },options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } } }); }</script>
+</body>
+</html>

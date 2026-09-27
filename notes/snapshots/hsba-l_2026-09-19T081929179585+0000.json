@@ -1,0 +1,178 @@
+{
+  "schema": "uk-equity-note/1",
+  "ticker": "HSBA.L",
+  "name": "HSBC Holdings",
+  "status": "published",
+  "analyst": "demo",
+  "created_at": "2026-09-19T08:19:29.164670+00:00",
+  "published_at": "2026-09-19T08:19:29.179585+00:00",
+  "thesis": {
+    "summary": "HSBC trades on a substantial discount to developed-market bank peers despite a high-margin Asia franchise, disciplined cost programme, and large ongoing buyback. We model mid-single-digit FCF growth and expect capital returns to compress the discount.",
+    "catalysts": [
+      "Continued share buybacks shrinking the share count",
+      "Rate income resilience as deposit margins stay elevated",
+      "Further cost saves from the $1.5bn restructuring programme"
+    ],
+    "risks": [
+      "Hong Kong/China macro exposure and geopolitical escalation",
+      "Net interest margin compression as rates fall",
+      "FX translation of USD earnings into GBP"
+    ]
+  },
+  "valuation_inputs": {
+    "dcf": {
+      "ticker": "HSBA.L",
+      "base_fcf_m": 6500.0,
+      "fcf_growth": [
+        0.04,
+        0.04,
+        0.03,
+        0.03,
+        0.02
+      ],
+      "terminal_growth": 0.02,
+      "wacc": 0.09,
+      "net_debt_m": -55000.0,
+      "shares_m": 17400.0
+    },
+    "dcf_result": {
+      "pv_explicit": 27939.12676654895,
+      "pv_terminal": 72048.39298342245,
+      "enterprise_value_m": 99987.5197499714,
+      "equity_value_m": 154987.5197499714,
+      "value_per_share": 8.907328721262724,
+      "projections": [
+        {
+          "year": 1,
+          "growth": 0.04,
+          "fcf_m": 6760.0,
+          "pv_m": 6201.8
+        },
+        {
+          "year": 2,
+          "growth": 0.04,
+          "fcf_m": 7030.4,
+          "pv_m": 5917.3
+        },
+        {
+          "year": 3,
+          "growth": 0.03,
+          "fcf_m": 7241.3,
+          "pv_m": 5591.6
+        },
+        {
+          "year": 4,
+          "growth": 0.03,
+          "fcf_m": 7458.6,
+          "pv_m": 5283.8
+        },
+        {
+          "year": 5,
+          "growth": 0.02,
+          "fcf_m": 7607.7,
+          "pv_m": 4944.5
+        }
+      ]
+    },
+    "comps": [
+      {
+        "peer": "Barclays",
+        "ev_ebitda": null,
+        "pe": 7.5,
+        "notes": ""
+      },
+      {
+        "peer": "Lloyds",
+        "ev_ebitda": null,
+        "pe": 8.0,
+        "notes": ""
+      },
+      {
+        "peer": "NatWest",
+        "ev_ebitda": null,
+        "pe": 7.8,
+        "notes": ""
+      },
+      {
+        "peer": "Standard Chartered",
+        "ev_ebitda": null,
+        "pe": 9.0,
+        "notes": ""
+      }
+    ],
+    "comps_result": {
+      "peer_median_ev_ebitda": null,
+      "peer_median_pe": 8.0,
+      "implied_ev_ebitda_m": null,
+      "implied_pe_price": 8.505747126436782
+    },
+    "blended_target": 8.79,
+    "weights": {
+      "dcf": 0.7,
+      "comps_0": 0.3
+    },
+    "units": "GBP; shares in millions"
+  },
+  "market_context": {
+    "price_gbp_at_draft": null,
+    "price_source": null,
+    "currency_note": "converted from LSE GBp quotes"
+  },
+  "recommendation": null,
+  "data_sources": {
+    "prices": "Yahoo Finance via yfinance (daily + intraday snapshots)",
+    "fundamentals": "Yahoo Finance via yfinance Ticker.info / financials",
+    "benchmark": "Yahoo Finance ^FTSE daily closes"
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:19:29.159144+00:00",
+      "event": "fetch_info",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "ok",
+      "keys": 22
+    },
+    {
+      "ts": "2026-09-19T08:19:29.163672+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "empty"
+    },
+    {
+      "ts": "2026-09-19T08:19:29.163672+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "empty",
+      "n": 0,
+      "elapsed_s": 0.0
+    },
+    {
+      "ts": "2026-09-19T08:19:29.164670+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "empty"
+    },
+    {
+      "ts": "2026-09-19T08:19:29.165671+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "empty",
+      "n": 0,
+      "elapsed_s": 0.0
+    }
+  ],
+  "benchmark": "^FTSE",
+  "tracked_vs": "FTSE 100, 3-month rolling",
+  "published_by": "demo_seed",
+  "publication_audit_id": "2026-09-19T08:19:29.178580+00:00"
+}

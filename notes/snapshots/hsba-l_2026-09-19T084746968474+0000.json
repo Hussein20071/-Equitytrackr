@@ -1,0 +1,237 @@
+{
+  "schema": "uk-equity-note/2",
+  "ticker": "HSBA.L",
+  "name": "HSBC Holdings",
+  "status": "published",
+  "analyst": "system",
+  "created_at": "2026-09-19T08:47:46.937396+00:00",
+  "published_at": "2026-09-19T08:47:46.968474+00:00",
+  "published_by": "auto_notes",
+  "headline": "BUY: target GBP 33.12 vs price GBP 15.126 (+119.0% upside) on blended DCF/DDM/comps",
+  "thesis": {
+    "summary": "Systematic note generated from live data. Market price GBP 15.126 against a blended 12-month target of GBP 33.12 (weights {'dcf': 0.75, 'comps_pe': 0.25}). The 2-stage FCF DCF on a base of GBP 18,744m latest-FY free cash flow (FX-converted from USD) values the shares at GBP 40.74. Peer-median P/E of 13.1x applied to EPS of GBP 0.78 implies GBP 10.25. Reported FCF has trended up over the last 4 financial years (GBP 11,159m -> GBP 18,744m), which drives the growth path shown in the inputs table.",
+    "catalysts": [
+      "Convergence toward the blended target of GBP 33.12 (+119.0%) over the 3-month review window",
+      "Next FY results: reported FCF vs the latest-FY base used in the DCF"
+    ],
+    "risks": [
+      "Thesis invalidation: price sustaining beyond GBP 33.12 in the opposite direction of the recommendation for 10+ sessions",
+      "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
+      "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
+    ]
+  },
+  "recommendation": "BUY",
+  "price_target_gbp": 33.12,
+  "target_weights": {
+    "dcf": 0.75,
+    "comps_pe": 0.25
+  },
+  "upside_pct": 118.96,
+  "valuation_inputs": {
+    "dcf": {
+      "base_fcf_m": 18744.14713491253,
+      "fcf_growth_path": [
+        0.0944,
+        0.0944,
+        0.0708,
+        0.0472,
+        0.0236
+      ],
+      "terminal_growth": 0.025,
+      "wacc": 0.0744961,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.571",
+      "net_debt_m": -229765.6883830543,
+      "shares_m": 17110.844763,
+      "result": {
+        "value_per_share": 40.74,
+        "pv_explicit_m": 94791.6,
+        "pv_terminal_m": 372575.9,
+        "equity_value_m": 697133.2,
+        "projections": [
+          {
+            "year": 1,
+            "growth": 0.0944,
+            "fcf_m": 20513.6,
+            "pv_m": 19091.4
+          },
+          {
+            "year": 2,
+            "growth": 0.0944,
+            "fcf_m": 22450.1,
+            "pv_m": 19445.0
+          },
+          {
+            "year": 3,
+            "growth": 0.0708,
+            "fcf_m": 24039.5,
+            "pv_m": 19378.1
+          },
+          {
+            "year": 4,
+            "growth": 0.0472,
+            "fcf_m": 25174.2,
+            "pv_m": 18885.8
+          },
+          {
+            "year": 5,
+            "growth": 0.0236,
+            "fcf_m": 25768.3,
+            "pv_m": 17991.3
+          }
+        ]
+      },
+      "derivation": [
+        "growth: FCF CAGR +18.9% over 3y, 50% damped -> +9.4% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)",
+        "terminal g = min(rf 4.99%, explicit CAGR/2) = 2.50%",
+        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.571",
+        "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "ke = 4.99% + 0.57 x 4.31% = 7.45%"
+      ]
+    },
+    "ddm": {
+      "dps_ttm_gbp": 41.56623799411191,
+      "roe": 0.13104999,
+      "payout": 53.02076161904762,
+      "ke": 0.0744961,
+      "g": -6.817320289968574,
+      "value_per_share": null,
+      "derivation": [
+        "DDM skipped: g=-681.73% not < ke*0.9=6.70%"
+      ]
+    },
+    "comps": {
+      "entries": [
+        {
+          "peer": "BARC.L",
+          "ev_ebitda": null,
+          "pe": 8.63242172184579
+        },
+        {
+          "peer": "LLOY.L",
+          "ev_ebitda": null,
+          "pe": 13.509678866728807
+        },
+        {
+          "peer": "NWG.L",
+          "ev_ebitda": null,
+          "pe": 9.517470989225174
+        },
+        {
+          "peer": "STAN.L",
+          "ev_ebitda": null,
+          "pe": 13.078285174578603
+        }
+      ],
+      "median_ev_ebitda": null,
+      "median_pe": 13.078285174578603,
+      "implied_price_pe": 10.25,
+      "implied_price_ev_ebitda": null,
+      "derivation": [
+        "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+        "P/E leg: median 13.1x x EPS 0.78 = 10.25"
+      ]
+    }
+  },
+  "market_context": {
+    "price_gbp_at_publication": 15.126,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "LSE quotes GBp; converted to GBP"
+  },
+  "provenance": {
+    "fx": {
+      "source": "Yahoo Finance FX (yfinance)",
+      "retrieved_at": "2026-09-19T08:47:39.972691+00:00",
+      "derivation": "1 USD = 0.7466 GBP (spot GBPUSD=X inverted)",
+      "url": ""
+    },
+    "income_statement": {
+      "source": "Yahoo Finance income_stmt (latest FY)",
+      "retrieved_at": "2026-09-19T08:47:40.126893+00:00",
+      "derivation": "converted USD->GBP at spot"
+    },
+    "cash_flow": {
+      "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
+      "retrieved_at": "2026-09-19T08:47:40.338721+00:00",
+      "derivation": "FCF = OCF + capex (capex negative), USD->GBP"
+    },
+    "balance_sheet": {
+      "source": "Yahoo Finance balance_sheet (latest FY)",
+      "retrieved_at": "2026-09-19T08:47:40.535875+00:00",
+      "derivation": "net debt = total debt - cash & ST investments"
+    },
+    "dividends": {
+      "source": "Yahoo Finance Ticker.dividends (actual payments)",
+      "retrieved_at": "2026-09-19T08:47:41.008603+00:00",
+      "derivation": "DPS TTM = sum of last 4 payments, USD->GBP"
+    },
+    "risk_free_rate": {
+      "source": "OECD long-term govt bond yield via FRED",
+      "retrieved_at": "2026-09-19T08:47:41.325784+00:00",
+      "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+    },
+    "cost_of_equity": [
+      {
+        "source": "OECD long-term govt bond yield via FRED",
+        "retrieved_at": "2026-09-19T08:47:41.215643+00:00",
+        "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+      },
+      {
+        "source": "Damodaran country risk premium (Western Europe)",
+        "retrieved_at": "2026-09-19T08:47:41.215643+00:00",
+        "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "url": "https://pages.stern.nyu.edu/~adamodar/"
+      },
+      {
+        "source": "CAPM",
+        "retrieved_at": "2026-09-19T08:47:41.215643+00:00",
+        "derivation": "ke = 4.99% + 0.57 x 4.31% = 7.45%"
+      }
+    ],
+    "peer_multiples": [
+      "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+      "P/E leg: median 13.1x x EPS 0.78 = 10.25"
+    ],
+    "blend": [
+      "blend: dcf 40.74 x 75%",
+      "blend: comps_pe 10.25 x 25%"
+    ],
+    "model_choices": {
+      "dcf_weight": 0.6,
+      "ddm_weight": 0.2,
+      "comps_weight": 0.2,
+      "growth_damping": "50% toward 0, floor/cap -5%/+15%",
+      "terminal_g_rule": "min(rf, explicit CAGR/2)",
+      "recommendation_bands": "BUY >= +15% upside, SELL <= -15%, else HOLD"
+    }
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:47:41.009575+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "ok",
+      "currency": "USD",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T08:47:41.108699+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "HSBA.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.1
+    }
+  ],
+  "benchmark": "^FTSE",
+  "review_period_months": 3,
+  "review_due_at": "2026-09-19T08:47:46.964843+00:00",
+  "addenda": [],
+  "publication_audit_id": "2026-09-19T08:47:46.964843+00:00"
+}

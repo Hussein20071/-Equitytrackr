@@ -1,0 +1,300 @@
+{
+  "schema": "uk-equity-note/2",
+  "ticker": "ULVR.L",
+  "name": "Unilever",
+  "status": "published",
+  "analyst": "system",
+  "created_at": "2026-09-19T09:06:33.332009+00:00",
+  "published_at": "2026-09-19T09:06:33.350981+00:00",
+  "published_by": "auto_notes",
+  "headline": "BUY: target GBP 53.75 vs price GBP 46.21 (+16.3% upside) on blended DCF/DDM/comps",
+  "thesis": {
+    "summary": "Systematic note generated from live data. Market price GBP 46.21 against a blended 12-month target of GBP 53.75 (weights {'dcf': 0.667, 'comps_pe': 0.222, 'comps_ev_ebitda': 0.111}). The 2-stage FCF DCF on a base of GBP 5,797m latest-FY free cash flow (FX-converted from EUR) values the shares at GBP 44.14. Peer-median P/E of 21.4x applied to EPS of GBP 3.77 implies GBP 80.59. Reported FCF has trended up over the last 4 financial years (GBP 4,780m -> GBP 5,797m), which drives the growth path shown in the inputs table.",
+    "catalysts": [
+      "Convergence toward the blended target of GBP 53.75 (+16.3%) over the 3-month review window",
+      "Next FY results: reported FCF vs the latest-FY base used in the DCF"
+    ],
+    "risks": [
+      "Thesis invalidation: price sustaining beyond GBP 53.75 in the opposite direction of the recommendation for 10+ sessions",
+      "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
+      "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
+    ]
+  },
+  "recommendation": "BUY",
+  "price_target_gbp": 53.75,
+  "target_weights": {
+    "dcf": 0.667,
+    "comps_pe": 0.222,
+    "comps_ev_ebitda": 0.111
+  },
+  "upside_pct": 16.32,
+  "valuation_inputs": {
+    "is_bank": false,
+    "beta_raw": 0.453,
+    "beta_adjusted": 0.63351,
+    "dcf": {
+      "base_fcf_m": 5797.2382249257125,
+      "fcf_growth_path": [
+        0.0332,
+        0.0332,
+        0.0249,
+        0.0166,
+        0.0083
+      ],
+      "terminal_growth": 0.025,
+      "wacc": 0.077190281,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.63351; implied pre-tax kd 4.2% disclosed only",
+      "net_debt_m": 18233.982456531397,
+      "shares_m": 2153.264756,
+      "result": {
+        "value_per_share": 44.14,
+        "pv_explicit_m": 25240.3,
+        "pv_terminal_m": 88040.7,
+        "equity_value_m": 95047.0,
+        "projections": [
+          {
+            "year": 1,
+            "growth": 0.0332,
+            "fcf_m": 5989.7,
+            "pv_m": 5560.5
+          },
+          {
+            "year": 2,
+            "growth": 0.0332,
+            "fcf_m": 6188.6,
+            "pv_m": 5333.4
+          },
+          {
+            "year": 3,
+            "growth": 0.0249,
+            "fcf_m": 6342.7,
+            "pv_m": 5074.5
+          },
+          {
+            "year": 4,
+            "growth": 0.0166,
+            "fcf_m": 6447.9,
+            "pv_m": 4789.1
+          },
+          {
+            "year": 5,
+            "growth": 0.0083,
+            "fcf_m": 6501.5,
+            "pv_m": 4482.8
+          }
+        ]
+      },
+      "derivation": [
+        "growth: FCF CAGR +6.6% over 3y, 50% damped -> +3.3% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)",
+        "terminal g = min(rf 4.99%, explicit CAGR/2) = 2.50%",
+        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.63351; implied pre-tax kd 4.2% disclosed only",
+        "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "ke = 4.99% + 0.63 x 4.31% = 7.72%",
+        "beta raw 0.45 -> adjusted 0.63 (0.67*raw + 0.33)"
+      ]
+    },
+    "ddm": {
+      "dps_ttm_gbp": 2.09045002,
+      "roe": 0.31869,
+      "payout": 0.5542355810987202,
+      "ke": 0.077190281,
+      "g": 0.14206066265964887,
+      "value_per_share": null,
+      "derivation": [
+        "DDM skipped: g=14.21% not < ke*0.9=6.95%"
+      ]
+    },
+    "comps": {
+      "entries": [
+        {
+          "peer": "PG",
+          "ev_ebitda": 14.91820260244259,
+          "pe": 21.190078420543024
+        },
+        {
+          "peer": "CL",
+          "ev_ebitda": 19.31969371227031,
+          "pe": 32.705773135901204
+        },
+        {
+          "peer": "RKT.L",
+          "ev_ebitda": 7.908167985478992,
+          "pe": 9.823029418881205
+        },
+        {
+          "peer": "BN.PA",
+          "ev_ebitda": 10.458769926352243,
+          "pe": 21.366323948909585
+        }
+      ],
+      "median_ev_ebitda": 14.91820260244259,
+      "median_pe": 21.366323948909585,
+      "implied_price_pe": 80.59,
+      "implied_price_ev_ebitda": 57.75,
+      "derivation": [
+        "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+        "P/E leg: median 21.4x x EPS 3.77 = 80.59",
+        "EV/EBITDA leg: median 14.9x x EBITDA 9,558m - net debt 18,234m = equity 124,358m / 2,153m shares = 57.75"
+      ]
+    }
+  },
+  "market_context": {
+    "price_gbp_at_publication": 46.21,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "LSE quotes GBp; converted to GBP"
+  },
+  "provenance": {
+    "fx": {
+      "source": "Yahoo Finance FX (yfinance)",
+      "retrieved_at": "2026-09-19T09:06:26.755777+00:00",
+      "derivation": "1 EUR = 0.8577 GBP (spot GBPEUR=X inverted)",
+      "url": ""
+    },
+    "income_statement": {
+      "source": "Yahoo Finance income_stmt (latest FY)",
+      "retrieved_at": "2026-09-19T09:06:26.917131+00:00",
+      "derivation": "converted EUR->GBP at spot"
+    },
+    "cash_flow": {
+      "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
+      "retrieved_at": "2026-09-19T09:06:27.076498+00:00",
+      "derivation": "FCF = OCF + capex (capex negative), EUR->GBP"
+    },
+    "balance_sheet": {
+      "source": "Yahoo Finance balance_sheet (latest FY)",
+      "retrieved_at": "2026-09-19T09:06:27.328725+00:00",
+      "derivation": "net debt = total debt - cash & ST investments"
+    },
+    "dividends": {
+      "source": "Yahoo Finance Ticker.dividends (actual payments)",
+      "retrieved_at": "2026-09-19T09:06:27.732203+00:00",
+      "derivation": "DPS TTM = sum of payments dated within 365d (209.0450 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
+    },
+    "risk_free_rate": {
+      "source": "OECD long-term govt bond yield via FRED",
+      "retrieved_at": "2026-09-19T09:06:28.093072+00:00",
+      "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+    },
+    "cost_of_equity": [
+      {
+        "source": "OECD long-term govt bond yield via FRED",
+        "retrieved_at": "2026-09-19T09:06:28.007822+00:00",
+        "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+      },
+      {
+        "source": "Damodaran country risk premium (Western Europe)",
+        "retrieved_at": "2026-09-19T09:06:28.007822+00:00",
+        "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "url": "https://pages.stern.nyu.edu/~adamodar/"
+      },
+      {
+        "source": "CAPM",
+        "retrieved_at": "2026-09-19T09:06:28.007822+00:00",
+        "derivation": "ke = 4.99% + 0.63 x 4.31% = 7.72%"
+      },
+      {
+        "source": "Blume (1971) beta adjustment",
+        "retrieved_at": "2026-09-19T09:06:27.900775+00:00",
+        "derivation": "beta raw 0.45 -> adjusted 0.63 (0.67*raw + 0.33)"
+      }
+    ],
+    "peer_multiples": [
+      "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP",
+      "P/E leg: median 21.4x x EPS 3.77 = 80.59",
+      "EV/EBITDA leg: median 14.9x x EBITDA 9,558m - net debt 18,234m = equity 124,358m / 2,153m shares = 57.75"
+    ],
+    "blend": [
+      "blend: dcf 44.14 x 67%",
+      "blend: comps_pe 80.59 x 22%",
+      "blend: comps_ev_ebitda 57.75 x 11%"
+    ],
+    "model_choices": {
+      "dcf_weight": 0.6,
+      "ddm_weight": 0.2,
+      "comps_weight": 0.2,
+      "growth_damping": "50% toward 0, floor/cap -5%/+15%",
+      "terminal_g_rule": "min(rf, explicit CAGR/2)",
+      "recommendation_bands": "BUY >= +15% upside, SELL <= -15%, else HOLD"
+    }
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:47:48.337403+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "currency": "EUR",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T08:47:48.443326+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.1
+    },
+    {
+      "ts": "2026-09-19T08:51:02.420216+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.2
+    },
+    {
+      "ts": "2026-09-19T09:00:22.065632+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "currency": "EUR",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:00:22.267546+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.18
+    },
+    {
+      "ts": "2026-09-19T09:06:27.741306+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "currency": "EUR",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:06:27.900775+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "ULVR.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.16
+    }
+  ],
+  "benchmark": "^FTSE",
+  "review_period_months": 3,
+  "review_due_at": "2026-09-19T09:06:33.350981+00:00",
+  "addenda": [],
+  "publication_audit_id": "2026-09-19T09:06:33.350981+00:00"
+}

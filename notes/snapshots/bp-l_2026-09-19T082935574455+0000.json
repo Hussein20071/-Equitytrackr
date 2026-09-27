@@ -1,0 +1,182 @@
+{
+  "schema": "uk-equity-note/1",
+  "ticker": "BP.L",
+  "name": "BP",
+  "status": "published",
+  "analyst": "demo",
+  "created_at": "2026-09-19T08:29:35.473677+00:00",
+  "published_at": "2026-09-19T08:29:35.574455+00:00",
+  "thesis": {
+    "summary": "BP's shares price in an FCF-and-buyback upgrade cycle that our numbers do not support: capex discipline is loosening, net debt is rising to fund distributions, and the strategy reset adds execution risk just as refining margins normalise. Our below-consensus FCF path and a full de-rating to peer medians imply material downside.",
+    "catalysts": [
+      "Buyback pace cut at the next capital-markets update",
+      "Net debt creeping above guided range",
+      "Weaker refining margins through H2"
+    ],
+    "risks": [
+      "Oil price spike on supply disruption forces an upgrade cycle",
+      "New strategy executed faster than guided"
+    ]
+  },
+  "valuation_inputs": {
+    "dcf": {
+      "ticker": "BP.L",
+      "base_fcf_m": 5000.0,
+      "fcf_growth": [
+        0.01,
+        0.01,
+        0.0,
+        0.0,
+        -0.01
+      ],
+      "terminal_growth": 0.015,
+      "wacc": 0.1,
+      "net_debt_m": 30000.0,
+      "shares_m": 6700.0
+    },
+    "dcf_result": {
+      "pv_explicit": 19257.328734376064,
+      "pv_terminal": 37439.63768145054,
+      "enterprise_value_m": 56696.96641582661,
+      "equity_value_m": 26696.96641582661,
+      "value_per_share": 3.9846218531084494,
+      "projections": [
+        {
+          "year": 1,
+          "growth": 0.01,
+          "fcf_m": 5050.0,
+          "pv_m": 4590.9
+        },
+        {
+          "year": 2,
+          "growth": 0.01,
+          "fcf_m": 5100.5,
+          "pv_m": 4215.3
+        },
+        {
+          "year": 3,
+          "growth": 0.0,
+          "fcf_m": 5100.5,
+          "pv_m": 3832.1
+        },
+        {
+          "year": 4,
+          "growth": 0.0,
+          "fcf_m": 5100.5,
+          "pv_m": 3483.7
+        },
+        {
+          "year": 5,
+          "growth": -0.01,
+          "fcf_m": 5049.5,
+          "pv_m": 3135.3
+        }
+      ]
+    },
+    "comps": [
+      {
+        "peer": "Shell",
+        "ev_ebitda": null,
+        "pe": 9.0,
+        "notes": ""
+      },
+      {
+        "peer": "TotalEnergies",
+        "ev_ebitda": null,
+        "pe": 8.0,
+        "notes": ""
+      },
+      {
+        "peer": "Eni",
+        "ev_ebitda": null,
+        "pe": 7.0,
+        "notes": ""
+      },
+      {
+        "peer": "Equinor",
+        "ev_ebitda": null,
+        "pe": 6.5,
+        "notes": ""
+      }
+    ],
+    "comps_result": {
+      "peer_median_ev_ebitda": null,
+      "peer_median_pe": 8.0,
+      "implied_ev_ebitda_m": null,
+      "implied_pe_price": 3.462686567164179
+    },
+    "blended_target": 3.83,
+    "weights": {
+      "dcf": 0.7,
+      "comps_0": 0.3
+    },
+    "units": "GBP; shares in millions"
+  },
+  "market_context": {
+    "price_gbp_at_draft": 5.587000000000001,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "converted from LSE GBp quotes"
+  },
+  "recommendation": "SELL",
+  "data_sources": {
+    "prices": "Yahoo Finance via yfinance (daily + intraday snapshots)",
+    "fundamentals": "Yahoo Finance via yfinance Ticker.info / financials",
+    "benchmark": "Yahoo Finance ^FTSE daily closes"
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T08:28:08.540328+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "BP.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.08
+    },
+    {
+      "ts": "2026-09-19T08:28:50.878651+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "BP.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.59
+    },
+    {
+      "ts": "2026-09-19T08:28:50.951718+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "BP.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.07
+    },
+    {
+      "ts": "2026-09-19T08:29:35.472491+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "BP.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.65
+    },
+    {
+      "ts": "2026-09-19T08:29:35.553443+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "BP.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.08
+    }
+  ],
+  "benchmark": "^FTSE",
+  "tracked_vs": "FTSE 100, 3-month rolling",
+  "published_by": "demo_seed",
+  "publication_audit_id": "2026-09-19T08:29:35.573455+00:00"
+}
