@@ -990,8 +990,11 @@ computed from live prices and statements. The full fetch trail is in
   const pubRow = anchors.find(a => Math.abs(a.shock) < 1e-9);
   const pubText = pubRow ? pubRow.targetEl.textContent.trim() : null;
   slider.addEventListener('input', () => {{
-    const v = parseFloat(slider.value);
-    const target = v === 0 ? (pubText ? 'published target' : '')
+    // Slider reads in percentage points (-2..2); grid shocks are stored as
+    // decimal fractions (-0.02..0.02). Convert once, use consistently.
+    const vpp = parseFloat(slider.value);
+    const v = vpp / 100;
+    const target = vpp === 0 ? (pubText ? 'published target' : '')
       : (() => {{
         const sorted = anchors.slice().sort((a, b) => a.shock - b.shock);
         let lo = sorted[0], hi = sorted[sorted.length - 1];
@@ -1003,7 +1006,7 @@ computed from live prices and statements. The full fetch trail is in
         const val = (hi.shock === lo.shock) ? t0 : t0 + (t1 - t0) * (v - lo.shock) / (hi.shock - lo.shock);
         return val.toFixed(2) + ' GBP';
       }})();
-    readout.textContent = (v > 0 ? '+' : '') + v.toFixed(1) + 'pp → ' + target;
+    readout.textContent = (vpp > 0 ? '+' : '') + vpp.toFixed(1) + 'pp → ' + target;
   }});
 }})();
 </script>
