@@ -1,0 +1,66 @@
+name: Deploy dashboard
+
+# Rebuilds the dashboard from live market data on a schedule and publishes it
+# to GitHub Pages. Pages is used purely as a static file server: the workflow
+# run performs the refresh itself, so the published artifact always reflects
+# the run that deployed it (timestamps, caption, tracked performance).
+
+on:
+  push:
+    branches: [main]              # deploy immediately on every push to main
+  schedule:
+    - cron: "*/30 7-16 * * 1-5"   # every 30 min during LSE hours (UTC Mon-Fri)
+    - cron: "0 21 * * 1-5"        # once after US close for the daily record
+  workflow_dispatch: {}            # manual run button
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Run test suite
+        run: python -m pytest tests/ -q
+
+      - name: Refresh live data and regenerate dashboard
+        run: python -m tracker.cli refresh
+
+      - name: Guard — dashboard regenerated with live data
+        run: |
+          test -f publish/index.html
+          grep -q "Data refreshed 20" publish/index.html
+          echo "publish/ regenerated at $(date -u +%FT%TZ)"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

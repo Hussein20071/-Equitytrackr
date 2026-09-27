@@ -1,0 +1,138 @@
+{"ts": "2026-09-26T11:54:00.746856+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 4.78}
+{"ts": "2026-09-26T11:54:01.590563+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.84}
+{"ts": "2026-09-26T11:54:01.807661+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.22}
+{"ts": "2026-09-26T11:54:02.708106+00:00", "event": "refresh", "reason": "cli", "quotes": 9, "notes_tracked": 8, "elapsed_s": 7.48}
+{"ts": "2026-09-26T11:54:09.905111+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 0.96}
+{"ts": "2026-09-26T11:54:10.572472+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.67}
+{"ts": "2026-09-26T11:54:10.775892+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.2}
+{"ts": "2026-09-26T11:54:11.163936+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 2.52}
+{"ts": "2026-09-26T13:19:20.934733+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.4}
+{"ts": "2026-09-26T13:19:22.925138+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.99}
+{"ts": "2026-09-26T13:19:23.131884+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.21}
+{"ts": "2026-09-26T13:19:23.740324+00:00", "event": "refresh", "reason": "cli", "quotes": 9, "notes_tracked": 8, "elapsed_s": 6.6}
+{"ts": "2026-09-26T13:20:13.971347+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.08}
+{"ts": "2026-09-26T13:20:15.275121+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.3}
+{"ts": "2026-09-26T13:20:15.443734+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T13:20:16.042824+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.15}
+{"ts": "2026-09-26T13:24:59.823708+00:00", "event": "integrity_incident", "finding": "audit log truncated to 8 rows between 12:05 and 13:16 UTC", "root_cause": "tests/test_tracker.py AuditTests patched config.DATA_DIR but called audit.clear() after restoring the real path in its finally block, wiping the production log on every pytest run", "fix": "test now patches audit._log_path with unittest.mock; production log path is unreachable from tests", "recovery": "8 rows (11:54:00-11:54:12 UTC) restored from git index blob; rows from 09:59-12:05 UTC unrecoverable", "python": "3.11.15"}
+{"ts": "2026-09-26T13:25:16.439244+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.25}
+{"ts": "2026-09-26T13:25:17.398242+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.96}
+{"ts": "2026-09-26T13:25:17.553726+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-26T13:25:17.940572+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.65}
+{"ts": "2026-09-26T13:25:18.242533+00:00", "event": "refresh", "reason": "cli", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.84}
+{"ts": "2026-09-26T13:25:18.985666+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.04}
+{"ts": "2026-09-26T13:25:19.203139+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.22}
+{"ts": "2026-09-26T13:25:19.655556+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.36}
+{"ts": "2026-09-26T13:30:22.667399+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.41}
+{"ts": "2026-09-26T13:30:23.726098+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.05}
+{"ts": "2026-09-26T13:30:23.930519+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.2}
+{"ts": "2026-09-26T13:30:24.988536+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.74}
+{"ts": "2026-09-26T13:35:26.912006+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.68}
+{"ts": "2026-09-26T13:35:27.977142+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.06}
+{"ts": "2026-09-26T13:35:28.154390+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T13:35:28.705464+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.47}
+{"ts": "2026-09-26T13:40:30.590721+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.75}
+{"ts": "2026-09-26T13:40:31.404031+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.81}
+{"ts": "2026-09-26T13:40:31.772544+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.37}
+{"ts": "2026-09-26T13:40:32.266883+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.43}
+{"ts": "2026-09-26T13:45:34.175783+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.78}
+{"ts": "2026-09-26T13:45:35.249694+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.07}
+{"ts": "2026-09-26T13:45:35.447361+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.2}
+{"ts": "2026-09-26T13:45:36.047467+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.65}
+{"ts": "2026-09-26T13:50:37.856826+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.68}
+{"ts": "2026-09-26T13:50:39.044702+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.19}
+{"ts": "2026-09-26T13:50:39.228471+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.18}
+{"ts": "2026-09-26T13:50:39.777681+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.6}
+{"ts": "2026-09-26T13:55:41.551126+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.64}
+{"ts": "2026-09-26T13:55:42.607341+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.05}
+{"ts": "2026-09-26T13:55:42.791227+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.18}
+{"ts": "2026-09-26T13:55:43.514296+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.6}
+{"ts": "2026-09-26T14:00:45.419008+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.76}
+{"ts": "2026-09-26T14:00:46.515395+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.09}
+{"ts": "2026-09-26T14:00:46.713368+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.2}
+{"ts": "2026-09-26T14:00:47.306444+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.65}
+{"ts": "2026-09-26T14:05:49.206312+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.77}
+{"ts": "2026-09-26T14:05:50.473390+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.26}
+{"ts": "2026-09-26T14:05:50.734293+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.26}
+{"ts": "2026-09-26T14:05:51.462656+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.03}
+{"ts": "2026-09-26T14:10:53.104539+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.51}
+{"ts": "2026-09-26T14:10:53.947446+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.84}
+{"ts": "2026-09-26T14:10:54.110116+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.16}
+{"ts": "2026-09-26T14:10:54.607913+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.01}
+{"ts": "2026-09-26T14:15:56.277125+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.54}
+{"ts": "2026-09-26T14:15:57.143814+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.87}
+{"ts": "2026-09-26T14:15:57.315532+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T14:15:57.808517+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.07}
+{"ts": "2026-09-26T14:20:59.750743+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.82}
+{"ts": "2026-09-26T14:21:01.823528+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 2.06}
+{"ts": "2026-09-26T14:21:02.177022+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.35}
+{"ts": "2026-09-26T14:21:02.854983+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.92}
+{"ts": "2026-09-26T14:26:04.684950+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.67}
+{"ts": "2026-09-26T14:26:05.580054+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.89}
+{"ts": "2026-09-26T14:26:05.756037+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T14:26:06.364944+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.35}
+{"ts": "2026-09-26T14:31:08.523623+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.86}
+{"ts": "2026-09-26T14:31:09.383375+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.86}
+{"ts": "2026-09-26T14:31:09.537133+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-26T14:31:10.057017+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.39}
+{"ts": "2026-09-26T14:36:12.509252+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.97}
+{"ts": "2026-09-26T14:36:13.390669+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.88}
+{"ts": "2026-09-26T14:36:13.546940+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-26T14:36:14.200713+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.66}
+{"ts": "2026-09-26T14:41:16.168330+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.8}
+{"ts": "2026-09-26T14:41:17.085635+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.91}
+{"ts": "2026-09-26T14:41:17.470255+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.38}
+{"ts": "2026-09-26T14:41:18.915353+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.55}
+{"ts": "2026-09-26T14:46:22.165417+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.81}
+{"ts": "2026-09-26T14:46:23.493815+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.29}
+{"ts": "2026-09-26T14:46:23.945877+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.45}
+{"ts": "2026-09-26T14:46:24.759142+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 5.43}
+{"ts": "2026-09-26T14:51:26.439611+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.52}
+{"ts": "2026-09-26T14:51:27.257529+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.82}
+{"ts": "2026-09-26T14:51:27.613667+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.35}
+{"ts": "2026-09-26T14:51:28.070118+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.15}
+{"ts": "2026-09-26T14:52:38.008398+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 3.79}
+{"ts": "2026-09-26T14:52:38.862582+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.85}
+{"ts": "2026-09-26T14:52:39.024660+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.16}
+{"ts": "2026-09-26T14:52:39.446652+00:00", "event": "refresh", "reason": "cli", "quotes": 9, "notes_tracked": 8, "elapsed_s": 6.02}
+{"ts": "2026-09-26T14:56:29.737179+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.52}
+{"ts": "2026-09-26T14:56:30.556237+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.82}
+{"ts": "2026-09-26T14:56:30.724828+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T14:56:31.127890+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 2.91}
+{"ts": "2026-09-26T15:01:32.931929+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.65}
+{"ts": "2026-09-26T15:01:33.808436+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.88}
+{"ts": "2026-09-26T15:01:33.964682+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-26T15:01:34.404106+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.13}
+{"ts": "2026-09-26T15:06:36.798996+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 2.22}
+{"ts": "2026-09-26T15:06:37.756027+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.95}
+{"ts": "2026-09-26T15:06:37.950119+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.19}
+{"ts": "2026-09-26T15:06:38.657932+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 4.09}
+{"ts": "2026-09-26T15:11:41.152044+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.83}
+{"ts": "2026-09-26T15:11:41.855346+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.7}
+{"ts": "2026-09-26T15:11:42.024713+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T15:11:42.479462+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.15}
+{"ts": "2026-09-26T15:16:44.545669+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.7}
+{"ts": "2026-09-26T15:16:45.345808+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.8}
+{"ts": "2026-09-26T15:16:45.485539+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.14}
+{"ts": "2026-09-26T15:16:45.879967+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.03}
+{"ts": "2026-09-26T15:21:47.971149+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.93}
+{"ts": "2026-09-26T15:21:48.870095+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.9}
+{"ts": "2026-09-26T15:21:49.040542+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.17}
+{"ts": "2026-09-26T15:21:49.652602+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 3.61}
+{"ts": "2026-09-27T09:05:53.685442+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 7.15}
+{"ts": "2026-09-27T09:05:54.753175+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 1.07}
+{"ts": "2026-09-27T09:05:54.904319+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-27T09:05:56.342014+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 11.36}
+{"ts": "2026-09-27T09:10:57.938320+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.48}
+{"ts": "2026-09-27T09:10:58.766357+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.83}
+{"ts": "2026-09-27T09:10:58.921431+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-27T09:10:59.263955+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 2.81}
+{"ts": "2026-09-27T09:15:46.431652+00:00", "event": "fetch_quotes", "tickers": ["AZN.L"], "status": "ok", "n": 1, "elapsed_s": 0.08}
+{"ts": "2026-09-27T09:15:46.579427+00:00", "event": "fetch_quotes", "tickers": ["SHEL.L"], "status": "ok", "n": 1, "elapsed_s": 0.15}
+{"ts": "2026-09-27T09:16:01.005641+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.57}
+{"ts": "2026-09-27T09:16:01.679928+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.67}
+{"ts": "2026-09-27T09:16:01.827102+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.15}
+{"ts": "2026-09-27T09:16:02.145321+00:00", "event": "refresh", "reason": "scheduled", "quotes": 9, "notes_tracked": 8, "elapsed_s": 2.71}
+{"ts": "2026-09-27T09:17:29.026336+00:00", "event": "fetch_quotes", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L", "^FTSE"], "status": "ok", "n": 9, "elapsed_s": 1.8}
+{"ts": "2026-09-27T09:17:29.720358+00:00", "event": "fetch_history", "tickers": ["AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "GSK.L", "BP.L", "NG.L", "RIO.L"], "status": "ok", "rows": 4053, "elapsed_s": 0.69}
+{"ts": "2026-09-27T09:17:29.931865+00:00", "event": "fetch_history", "tickers": ["^FTSE"], "status": "ok", "rows": 507, "elapsed_s": 0.21}
