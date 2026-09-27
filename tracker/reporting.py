@@ -433,8 +433,8 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
     </ul>
   </div>
   <div id="update-toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:72px;z-index:60;display:none;background:#0f3460;color:#fff;padding:11px 18px;border-radius:12px;box-shadow:0 8px 22px rgba(15,23,42,0.28);font-size:13.5px">
-    <b>Prices updated</b> — <span id="toast-ts"></span> ·
-    <a href="#" id="toast-reload" style="color:#9fd0ff;text-decoration:underline">View now</a>
+    <b>Prices updated</b> — <span id="toast-ts"></span>
+    · <a href="#" id="toast-reload" style="color:#9fd0ff;text-decoration:underline">view the latest</a>
     <button id="toast-close" aria-label="Dismiss" style="margin-left:10px;background:none;border:none;color:#c7d4ea;cursor:pointer;font-size:14px">&#10005;</button>
   </div>
   <div style="position:fixed;right:14px;bottom:14px;z-index:50;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:999px;box-shadow:0 4px 14px rgba(15,23,42,0.14);padding:7px 13px;font-size:12.5px">
@@ -486,14 +486,21 @@ const liveSel = document.getElementById('live-interval');
 const updateToast = document.getElementById('update-toast');
 let toastShownFor = '';
 try {{ const saved = localStorage.getItem('live_interval'); if (saved !== null) liveSel.value = saved; }} catch (e) {{}}
+function sameTs(a, b) {{
+  // Compare at minute precision: GitHub Pages may serve HTML cached up to
+  // 10 min, and refreshes land at ~5 min cadence, so seconds-level diffs
+  // are meaningless (and would make View now reload into the same page).
+  return String(a || '').slice(0, 16) === String(b || '').slice(0, 16);
+}}
 function pollRefresh() {{
   fetch('refresh_meta.json', {{ cache: 'no-store' }})
     .then(r => r.ok ? r.json() : null)
     .then(m => {{
-      if (m && m.refreshed_at && m.refreshed_at !== PAGE_TS && m.refreshed_at !== toastShownFor) {{
+      if (m && m.refreshed_at && !sameTs(m.refreshed_at, PAGE_TS) && m.refreshed_at !== toastShownFor) {{
         toastShownFor = m.refreshed_at;
         document.getElementById('toast-ts').textContent =
-          'refreshed ' + String(m.refreshed_at).replace('T', ' ').slice(0, 16) + ' UTC';
+          'Loaded ' + String(PAGE_TS).replace('T', ' ').slice(0, 16) + ' UTC · latest is ' +
+          String(m.refreshed_at).replace('T', ' ').slice(0, 16) + ' UTC';
         updateToast.style.display = 'block';
       }}
     }})
@@ -509,7 +516,12 @@ function armAutoReload() {{
 }}
 liveSel.addEventListener('change', armAutoReload);
 armAutoReload();
-document.getElementById('toast-reload').addEventListener('click', e => {{ e.preventDefault(); location.reload(); }});
+document.getElementById('toast-reload').addEventListener('click', e => {{
+  e.preventDefault();
+  // Bust GitHub Pages' 10-min HTML cache so the click actually lands you on
+  // the refreshed page instead of re-serving what you're already viewing.
+  location.replace(location.pathname + '?t=' + Date.now() + location.hash);
+}});
 document.getElementById('toast-close').addEventListener('click', () => {{ updateToast.style.display = 'none'; }});
 </script>
 </body>

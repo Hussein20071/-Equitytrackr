@@ -416,13 +416,15 @@ class LiveUpdateTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             meta_file = Path(tmp) / "refresh_meta.json"
+            dash_kwargs = {}
             with mock.patch.object(ref, "REFRESH_META", meta_file), \
                  mock.patch.object(ref.data, "fetch_quotes", return_value={}), \
                  mock.patch.object(ref.data, "fetch_history", return_value={}), \
                  mock.patch.object(ref.data, "save_snapshot"), \
                  mock.patch.object(ref.performance, "portfolio_curve", return_value=[]), \
                  mock.patch.object(ref.reporting, "write_all_note_pages"), \
-                 mock.patch.object(ref.reporting, "write_dashboard"), \
+                 mock.patch.object(ref.reporting, "write_dashboard",
+                                   side_effect=lambda **kw: dash_kwargs.update(kw)), \
                  mock.patch.object(ref.reporting, "write_publish_bundle"), \
                  mock.patch.object(ref.audit, "record"), \
                  mock.patch.object(ref.research, "list_notes", return_value=[]):
@@ -431,3 +433,49 @@ class LiveUpdateTests(unittest.TestCase):
             self.assertEqual(meta["reason"], "test")
             self.assertIn("refreshed_at", meta)
             self.assertIn("market_open", meta)
+
+    def test_dashboard_and_meta_share_one_timestamp(self):
+        """Client compares page ts vs meta ts — they must be identical.
+
+        Regression: they were captured microseconds apart, so every page
+        load falsely believed newer data existed and the toast nagged.
+        """
+        import json as _json
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+
+        from tracker import refresh as ref
+
+        with tempfile.TemporaryDirectory() as tmp:
+            meta_file = Path(tmp) / "refresh_meta.json"
+            dash_kwargs = {}
+            with mock.patch.object(ref, "REFRESH_META", meta_file), \
+                 mock.patch.object(ref.data, "fetch_quotes", return_value={}), \
+                 mock.patch.object(ref.data, "fetch_history", return_value={}), \
+                 mock.patch.object(ref.data, "save_snapshot"), \
+                 mock.patch.object(ref.performance, "portfolio_curve", return_value=[]), \
+                 mock.patch.object(ref.reporting, "write_all_note_pages"), \
+                 mock.patch.object(ref.reporting, "write_dashboard",
+                                   side_effect=lambda **kw: dash_kwargs.update(kw)), \
+                 mock.patch.object(ref.reporting, "write_publish_bundle"), \
+                 mock.patch.object(ref.audit, "record"), \
+                 mock.patch.object(ref.research, "list_notes", return_value=[]):
+                ref.refresh_once("test")
+            meta = _json.loads(meta_file.read_text(encoding="utf-8"))
+            self.assertEqual(dash_kwargs.get("refresh_ts"), meta["refreshed_at"])
+
+    def test_toast_click_busts_pages_cache(self):
+        """View-now must bypass GitHub Pages' 10-minute HTML cache."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = self._render(tmp)
+            self.assertIn("location.pathname + '?t=' + Date.now()", doc)
+
+    def test_toast_compares_minutes_not_seconds(self):
+        """Minute-precision compare: Pages HTML can lag meta by seconds."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = self._render(tmp)
+            self.assertIn("function sameTs", doc)
+            self.assertIn(".slice(0, 16) ===", doc)

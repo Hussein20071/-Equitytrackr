@@ -56,6 +56,11 @@ def refresh_once(reason: str = "scheduled") -> dict:
     valid_rows = [r for r in perf_rows if r]
     summary = performance.summarize(valid_rows)
 
+    # One timestamp shared by the dashboard, note pages, audit record and
+    # refresh_meta.json — the client compares these, so they must be identical
+    # or every page load would falsely believe newer data exists.
+    now_ts = datetime.now(timezone.utc).isoformat()
+
     series_by_ticker = {
         n["ticker"]: performance.note_series(n, hist, bench)
         for n in published
@@ -69,7 +74,7 @@ def refresh_once(reason: str = "scheduled") -> dict:
         curve=curve,
         perf_rows=valid_rows,
         summary=summary,
-        refresh_ts=datetime.now(timezone.utc).isoformat(),
+        refresh_ts=now_ts,
         notes=published,
         perf_by_ticker=perf_by_ticker,
         monthly_by_ticker=monthly,
@@ -82,7 +87,7 @@ def refresh_once(reason: str = "scheduled") -> dict:
     # Live-update signal for open tabs: the dashboard polls this every 60s and
     # offers "Prices updated — view now"; it also drives the auto-reload timer.
     meta = {
-        "refreshed_at": datetime.now(timezone.utc).isoformat(),
+        "refreshed_at": now_ts,
         "reason": reason,
         "quotes": len(quotes),
         "elapsed_s": round(time.time() - t0, 2),
