@@ -1,6 +1,6 @@
 # UK Equity Research & Portfolio Tracker
 
-[![Deploy dashboard](https://github.com/Xzarth/-Equitytrackr/actions/workflows/deploy.yml/badge.svg)](https://github.com/Xzarth/-Equitytrackr/actions/workflows/deploy.yml) **Live site:** https://xzarth.github.io/-Equitytrackr/
+[![Deploy dashboard](https://github.com/Hussein20071/-Equitytrackr/actions/workflows/deploy.yml/badge.svg)](https://github.com/Hussein20071/-Equitytrackr/actions/workflows/deploy.yml) **Live site:** https://hussein20071.github.io/-Equitytrackr/
 
 An **audit-ready equity research and portfolio attribution system** for FTSE 100 names. Every published research note contains a dated thesis, explicit valuation inputs derived from live public data, a clear 12-month price target, per-input provenance — and is then **tracked for 3 months against the FTSE 100**, with alpha, hit-rate, volatility, and drawdown statistics on a live dashboard.
 
