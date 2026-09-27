@@ -55,6 +55,13 @@ python -m tracker.cli status
 
 Outputs: `dashboard/index.html` (dashboard with expandable notes), `notes/html/<ticker>.html` (standalone print/PDF-ready note pages), `notes/<ticker>.json|.md` (machine + markdown), `data/audit_log.jsonl`.
 
+## Live updates
+
+- **Cloud (this site):** GitHub Actions re-fetches every quote and re-renders the whole site **every 5 minutes during London market hours** (07:00–16:30 UTC Mon–Fri), once after the US close for the daily record, and once each weekend day. GitHub's scheduler minimum is 5 minutes and runs can be delayed a few minutes under load — that's the platform floor, not the app.
+- **Your open tab:** the dashboard polls `refresh_meta.json` every 60 seconds. When new data lands you get a **"Prices updated — view now"** toast, or pick an **auto-reload interval** (off / 1 / 5 / 10 min) from the widget in the bottom-right corner. Your choice is remembered.
+- **Local machine (optional, faster):** `python -m tracker.cli loop --interval 1` re-renders every minute from your PC; push to publish, or just use it as a live second view.
+- **"Day" column:** the track-record table shows each stock's **last close vs previous close** — the same daily move Yahoo Finance shows. **Return** and **Alpha** are deliberately different numbers: performance since the thesis date (the track record), not today's tick.
+
 ## Free hosting (GitHub Pages)
 
 The dashboard deploys as a static site that **GitHub Actions rebuilds from live data on a schedule** — the cloud reruns `python -m tracker.cli refresh` (real Yahoo/FRED fetches, real valuation math), assembles the `publish/` bundle, and deploys it. The site stays fresh with your laptop off.

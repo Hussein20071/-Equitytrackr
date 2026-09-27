@@ -8,12 +8,18 @@ or to be triggered externally (cron / Task Scheduler) via --once.
 from __future__ import annotations
 
 import argparse
+import json
 import signal
 import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 from . import audit, config, data, performance, reporting, research
+
+# Written into the deploy bundle each cycle; the dashboard JS polls it so an
+# open tab can toast "Prices updated — view now" and auto-reload on a timer.
+REFRESH_META = Path("publish/refresh_meta.json")
 
 
 def _running_yn() -> bool:
@@ -72,6 +78,18 @@ def refresh_once(reason: str = "scheduled") -> dict:
     )
     # Deployable static-site bundle (GitHub Pages root) + raw audit log
     reporting.write_publish_bundle()
+
+    # Live-update signal for open tabs: the dashboard polls this every 60s and
+    # offers "Prices updated — view now"; it also drives the auto-reload timer.
+    meta = {
+        "refreshed_at": datetime.now(timezone.utc).isoformat(),
+        "reason": reason,
+        "quotes": len(quotes),
+        "elapsed_s": round(time.time() - t0, 2),
+        "market_open": _running_yn(),
+    }
+    REFRESH_META.parent.mkdir(parents=True, exist_ok=True)
+    REFRESH_META.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 
     stats = {
         "reason": reason,

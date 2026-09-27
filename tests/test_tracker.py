@@ -343,3 +343,91 @@ class UnitsTableTests(unittest.TestCase):
         by = {r["ticker"]: r for r in rows}
         self.assertEqual(by["AZN.L"]["pence"], "12,552.00p")  # same format as Yahoo
         self.assertEqual(by["^FTSE"]["pence"], "")  # index points, not pence
+
+
+class DayChangeTests(unittest.TestCase):
+    """Day column = last close vs prev close — the number Yahoo shows."""
+
+    def test_qrows_day_change_sign(self):
+        from tracker.reporting import _qrows
+        rows = _qrows({"AZN.L": {"price_gbp": 125.52, "prev_close_gbp": 124.0}})
+        self.assertIn("+1.23%", rows[0]["chg_html"])
+
+    def test_perf_rows_include_day_column(self):
+        from tracker.reporting import _perf_rows_html
+        perf = [{"ticker": "AZN.L", "thesis_date": "2026-09-21",
+                 "base_price": 125.0, "last_price": 125.52,
+                 "return_pct": -0.06, "alpha_pct": 0.34,
+                 "ann_vol_pct": None, "max_drawdown_pct": None, "rec": "HOLD"}]
+        quotes = {"AZN.L": {"price_gbp": 125.52, "prev_close_gbp": 124.0}}
+        html = _perf_rows_html(perf, {"AZN.L": []}, quotes)
+        self.assertIn("+1.23%", html)          # day change, Yahoo-equivalent
+        self.assertIn("-0.06%", html)          # since-thesis return still present
+
+    def test_empty_track_record_colspan(self):
+        from tracker.reporting import _perf_rows_html
+        html = _perf_rows_html([], {})
+        self.assertIn('colspan="10"', html)
+
+
+class LiveUpdateTests(unittest.TestCase):
+    """Dashboard carries the update toast, interval selector, and meta polling."""
+
+    def _render(self, tmp):
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+
+        import tracker.reporting as rep
+
+        dash = Path(tmp) / "index.html"
+        with mock.patch.object(rep, "DASH_FILE", dash):
+            rep.write_dashboard(
+                quotes=None, curve=[], perf_rows=[], summary={},
+                refresh_ts="2026-09-27T10:00:00+00:00",
+            )
+        return dash.read_text(encoding="utf-8")
+
+    def test_dashboard_has_live_update_ui(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = self._render(tmp)
+            self.assertIn("refresh_meta.json", doc)      # polled every 60s
+            self.assertIn("update-toast", doc)           # "Prices updated" toast
+            self.assertIn("live-interval", doc)          # auto-reload selector
+            self.assertIn("setInterval(pollRefresh, 60000)", doc)
+
+    def test_dashboard_labels_return_columns_as_since_thesis(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = self._render(tmp)
+            self.assertIn("Return since thesis", doc)
+            self.assertIn("Alpha since thesis", doc)
+            self.assertIn("<th>Day</th>", doc)
+
+    def test_refresh_once_writes_meta(self):
+        """refresh_once drops refresh_meta.json into the publish bundle."""
+        import json as _json
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+
+        from tracker import refresh as ref
+
+        with tempfile.TemporaryDirectory() as tmp:
+            meta_file = Path(tmp) / "refresh_meta.json"
+            with mock.patch.object(ref, "REFRESH_META", meta_file), \
+                 mock.patch.object(ref.data, "fetch_quotes", return_value={}), \
+                 mock.patch.object(ref.data, "fetch_history", return_value={}), \
+                 mock.patch.object(ref.data, "save_snapshot"), \
+                 mock.patch.object(ref.performance, "portfolio_curve", return_value=[]), \
+                 mock.patch.object(ref.reporting, "write_all_note_pages"), \
+                 mock.patch.object(ref.reporting, "write_dashboard"), \
+                 mock.patch.object(ref.reporting, "write_publish_bundle"), \
+                 mock.patch.object(ref.audit, "record"), \
+                 mock.patch.object(ref.research, "list_notes", return_value=[]):
+                ref.refresh_once("test")
+            meta = _json.loads(meta_file.read_text(encoding="utf-8"))
+            self.assertEqual(meta["reason"], "test")
+            self.assertIn("refreshed_at", meta)
+            self.assertIn("market_open", meta)

@@ -9,8 +9,9 @@ on:
   push:
     branches: [main]              # deploy immediately on every push to main
   schedule:
-    - cron: "*/30 7-16 * * 1-5"   # every 30 min during LSE hours (UTC Mon-Fri)
+    - cron: "*/5 7-16 * * 1-5"    # GitHub's minimum interval: every 5 min in LSE hours (UTC Mon-Fri)
     - cron: "0 21 * * 1-5"        # once after US close for the daily record
+    - cron: "30 9 * * 0,6"        # weekend touch so the site never looks stale
   workflow_dispatch: {}            # manual run button
 
 permissions:

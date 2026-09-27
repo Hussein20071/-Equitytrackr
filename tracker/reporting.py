@@ -139,16 +139,21 @@ def _qtable(qrows: list[dict]) -> str:
             '<th>QUOTED (GBp)</th><th>DAY</th></tr>' + body)
 
 
-def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict) -> str:
+def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict,
+                    quotes: dict | None = None) -> str:
     if not perf_rows:
-        return '<tr><td colspan="9" class="muted">No published notes yet.</td></tr>'
+        return '<tr><td colspan="10" class="muted">No published notes yet.</td></tr>'
     out = []
     for r in perf_rows:
         slug = _note_filename(r["ticker"]).replace(".html", "")
         spark = _sparkline_svg(series_by_ticker.get(r["ticker"]) or [])
+        q = (quotes or {}).get(r["ticker"]) or {}
+        day_chg = ((q.get("price_gbp") / q.get("prev_close_gbp") - 1) * 100
+                   if (q.get("price_gbp") and q.get("prev_close_gbp")) else None)
         out.append(
             "<tr>"
             f'<td><a href="#note-{slug}"><strong>{_esc(r["ticker"])}</strong></a></td>'
+            f"<td>{_fmt_pct(day_chg)}</td>"
             f"<td>{_esc(r['thesis_date'])}</td>"
             f"<td>{_fmt_num(r['base_price'])} → {_fmt_num(r['last_price'])}</td>"
             f"<td>{spark}</td>"
@@ -404,10 +409,10 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   <h2>Track record vs FTSE 100 — 3-month window per thesis</h2>
   <div class="kpis">{_kpi_cards(summary)}</div>
   <table>
-    <tr><th>Ticker</th><th>Thesis date</th><th>Price path</th><th>Chart</th><th>Return</th><th>Alpha</th><th>Ann. vol</th><th>Max DD</th><th>Rec</th></tr>
-    {_perf_rows_html(perf_rows, series_by_ticker)}
+    <tr><th>Ticker</th><th>Day</th><th>Thesis date</th><th>Price path</th><th>Chart</th><th>Return since thesis</th><th>Alpha since thesis</th><th>Ann. vol</th><th>Max DD</th><th>Rec</th></tr>
+    {_perf_rows_html(perf_rows, series_by_ticker, quotes)}
   </table>
-  <div class="muted" style="margin-top:6px">Vol = annualised volatility of daily returns · Max DD = maximum drawdown over the tracked window · click a ticker to jump to its note, expand the card for full inputs.</div>
+  <div class="muted" style="margin-top:6px"><b>Day</b> = last close vs previous close — the same number Yahoo Finance shows. <b>Return</b> and <b>Alpha</b> measure performance since the thesis date (a multi-day track record), not today's move. Vol = annualised volatility of daily returns · Max DD = maximum drawdown over the tracked window · click a ticker to jump to its note, expand the card for full inputs.</div>
 
   <h2>Research notes</h2>
   <div class="notecards">{cards_html}</div>
@@ -426,6 +431,21 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
       <li><b>Audit log:</b> every fetch, publication, and refresh appends to <code>data/audit_log.jsonl</code> — each note stores the audit ids of the fetches behind its numbers.</li>
       <li><b>Exclusions are recorded:</b> peer multiples above NM caps, single-peer medians, depressed-earnings P/E legs — each note shows what was excluded and why.</li>
     </ul>
+  </div>
+  <div id="update-toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:72px;z-index:60;display:none;background:#0f3460;color:#fff;padding:11px 18px;border-radius:12px;box-shadow:0 8px 22px rgba(15,23,42,0.28);font-size:13.5px">
+    <b>Prices updated</b> — <span id="toast-ts"></span> ·
+    <a href="#" id="toast-reload" style="color:#9fd0ff;text-decoration:underline">View now</a>
+    <button id="toast-close" aria-label="Dismiss" style="margin-left:10px;background:none;border:none;color:#c7d4ea;cursor:pointer;font-size:14px">&#10005;</button>
+  </div>
+  <div style="position:fixed;right:14px;bottom:14px;z-index:50;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:999px;box-shadow:0 4px 14px rgba(15,23,42,0.14);padding:7px 13px;font-size:12.5px">
+    <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block"></span>
+    <label for="live-interval" style="color:#51617a">Auto-reload</label>
+    <select id="live-interval" style="border:1px solid #cbd5e1;border-radius:6px;padding:2px 4px;font-size:12.5px">
+      <option value="0">Off</option>
+      <option value="60">1 min</option>
+      <option value="300" selected>5 min</option>
+      <option value="600">10 min</option>
+    </select>
   </div>
   <details id="audit-trail" style="margin-top:18px">
     <summary style="cursor:pointer;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px">Append-only audit trail — every fetch, publication, and refresh (last 300 events)</summary>
@@ -460,6 +480,37 @@ if (curveData.length > 1) {{
     }}
   }});
 }}
+// ---- live updates: poll refresh_meta.json, toast on new data, optional auto-reload ----
+const PAGE_TS = '{refresh_ts}';
+const liveSel = document.getElementById('live-interval');
+const updateToast = document.getElementById('update-toast');
+let toastShownFor = '';
+try {{ const saved = localStorage.getItem('live_interval'); if (saved !== null) liveSel.value = saved; }} catch (e) {{}}
+function pollRefresh() {{
+  fetch('refresh_meta.json', {{ cache: 'no-store' }})
+    .then(r => r.ok ? r.json() : null)
+    .then(m => {{
+      if (m && m.refreshed_at && m.refreshed_at !== PAGE_TS && m.refreshed_at !== toastShownFor) {{
+        toastShownFor = m.refreshed_at;
+        document.getElementById('toast-ts').textContent =
+          'refreshed ' + String(m.refreshed_at).replace('T', ' ').slice(0, 16) + ' UTC';
+        updateToast.style.display = 'block';
+      }}
+    }})
+    .catch(() => {{}});
+}}
+setInterval(pollRefresh, 60000);
+pollRefresh();
+function armAutoReload() {{
+  const secs = parseInt(liveSel.value, 10);
+  try {{ localStorage.setItem('live_interval', liveSel.value); }} catch (e) {{}}
+  if (window.__liveTimer) clearInterval(window.__liveTimer);
+  if (secs > 0) window.__liveTimer = setInterval(() => location.reload(), secs * 1000);
+}}
+liveSel.addEventListener('change', armAutoReload);
+armAutoReload();
+document.getElementById('toast-reload').addEventListener('click', e => {{ e.preventDefault(); location.reload(); }});
+document.getElementById('toast-close').addEventListener('click', () => {{ updateToast.style.display = 'none'; }});
 </script>
 </body>
 </html>"""
