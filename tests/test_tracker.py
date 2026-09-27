@@ -321,3 +321,25 @@ class DisplayHygieneTests(unittest.TestCase):
             self.assertTrue((pub / "audit_log.jsonl").is_file())
             page = (pub / "audit.html").read_text(encoding="utf-8")
             self.assertIn("fetch_quotes", page)  # payload columns are populated
+
+
+class UnitsTableTests(unittest.TestCase):
+    """Market snapshot shows GBP and quoted pence side by side (no fake look)."""
+
+    def test_qtable_shows_both_units(self):
+        from tracker.reporting import _qtable
+        html = _qtable([{
+            "ticker": "AZN.L", "name": "AstraZeneca",
+            "price": "125.52", "pence": "12,552.00p", "chg_html": "+1.2%",
+        }])
+        self.assertIn("QUOTED (GBp)", html)
+        self.assertIn("12,552.00p", html)
+        self.assertIn("125.52", html)
+
+    def test_qrows_pence_conversion_and_index(self):
+        from tracker.reporting import _qrows
+        rows = _qrows({"AZN.L": {"price_gbp": 125.52, "prev_close_gbp": 124.0},
+                       "^FTSE": {"price_gbp": 10659.1, "prev_close_gbp": 10600.0}})
+        by = {r["ticker"]: r for r in rows}
+        self.assertEqual(by["AZN.L"]["pence"], "12,552.00p")  # same format as Yahoo
+        self.assertEqual(by["^FTSE"]["pence"], "")  # index points, not pence

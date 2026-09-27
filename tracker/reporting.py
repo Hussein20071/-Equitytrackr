@@ -398,7 +398,7 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   <div class="caption"><b>Track record:</b> {_esc(caption)}</div>
 
   <h2>Market snapshot — live LSE quotes</h2>
-  <p class="muted">The London Stock Exchange quotes in <b>pence (GBp)</b>; Yahoo shows "12,552" for AstraZeneca — the same security this table lists at <b>£125.52</b> (12,552p ÷ 100). All valuation work on this site is in GBP (£); the pence column is shown so you can cross-check against Yahoo/Google Finance directly.</p>
+  <p class="muted">The London Stock Exchange quotes shares in <b>pence (GBp)</b>; this site expresses every price, target, and valuation in <b>GBP (£) = pence ÷ 100</b>. The QUOTED column shows the same live price in pence so you can cross-check directly against Yahoo or Google Finance.</p>
   <table>{_qtable(qrows)}</table>
 
   <h2>Track record vs FTSE 100 — 3-month window per thesis</h2>
@@ -649,7 +649,8 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
   <div class="sumgrid">
     <div class="cell"><div class="l">Price target</div><div class="v">{_fmt_num(note.get('price_target_gbp'))}</div></div>
     <div class="cell"><div class="l">Upside</div><div class="v">{_fmt_pct(note.get('upside_pct'))}</div></div>
-    <div class="cell"><div class="l">Price at pub.</div><div class="v">{_fmt_num(ctx.get('price_gbp_at_publication'))}</div></div>
+    <div class="cell"><div class="l">Price at pub.</div><div class="v">{_fmt_num(ctx.get('price_gbp_at_publication'))}
+      <span style="font-size:10.5px;font-weight:500;color:#8593aa"> = {_fmt_num((ctx.get('price_gbp_at_publication') or 0) * 100)}p quoted</span></div></div>
     <div class="cell"><div class="l">Alpha so far</div><div class="v">{_fmt_pct(perf['alpha_pct']) if perf else '<span class="zero">–</span>'}</div></div>
     <div class="cell"><div class="l">Review window</div><div class="v">{note.get('review_period_months')}m</div></div>
     <div class="cell"><div class="l">Audit id</div><div class="v" style="font-size:11px;font-weight:600">{_esc(note.get('publication_audit_id', ''))[:19]}</div></div>
