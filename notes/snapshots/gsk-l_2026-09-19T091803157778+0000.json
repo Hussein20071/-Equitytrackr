@@ -1,0 +1,276 @@
+{
+  "schema": "uk-equity-note/2",
+  "ticker": "GSK.L",
+  "name": "GSK",
+  "status": "published",
+  "analyst": "system",
+  "created_at": "2026-09-19T09:18:03.141541+00:00",
+  "published_at": "2026-09-19T09:18:03.157778+00:00",
+  "published_by": "auto_notes",
+  "headline": "BUY: target GBP 26.24 vs price GBP 18.775 (+39.8% upside) on blended DCF/DDM/comps",
+  "thesis": {
+    "summary": "Systematic note generated from live data. Market price GBP 18.775 against a blended 12-month target of GBP 26.24 (weights {'ddm': 0.4, 'comps_pe': 0.4, 'comps_ev_ebitda': 0.2}). Gordon DDM on trailing DPS GBP 0.84 (g = ROE x retention) values them at GBP 21.34. Peer-median P/E of 20.1x applied to EPS of GBP 1.43 implies GBP 28.64. Reported FCF has trended down over the last 4 financial years (GBP 5,145m -> GBP 4,756m), which drives the growth path shown in the inputs table.",
+    "catalysts": [
+      "Convergence toward the blended target of GBP 26.24 (+39.8%) over the 3-month review window",
+      "Next FY results: reported FCF vs the latest-FY base used in the DCF"
+    ],
+    "risks": [
+      "Thesis invalidation: price sustaining beyond GBP 26.24 in the opposite direction of the recommendation for 10+ sessions",
+      "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
+      "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
+    ]
+  },
+  "recommendation": "BUY",
+  "price_target_gbp": 26.24,
+  "target_weights": {
+    "ddm": 0.4,
+    "comps_pe": 0.4,
+    "comps_ev_ebitda": 0.2
+  },
+  "upside_pct": 39.76,
+  "valuation_inputs": {
+    "is_bank": false,
+    "beta_raw": 0.29,
+    "beta_adjusted": 0.5980000000000001,
+    "dcf": {
+      "base_fcf_m": 4756.0,
+      "fcf_growth_path": [
+        -0.0129,
+        -0.0065,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "terminal_growth": 0.0,
+      "wacc": 0.0756598,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.5980000000000001; implied pre-tax kd 4.1% disclosed only",
+      "net_debt_m": 13731.0,
+      "shares_m": 4005.611246,
+      "result": {
+        "value_per_share": null,
+        "pv_explicit_m": null,
+        "pv_terminal_m": null,
+        "equity_value_m": null,
+        "projections": []
+      },
+      "derivation": [
+        "Invalid DCF inputs: ['WACC must exceed terminal growth']"
+      ]
+    },
+    "ddm": {
+      "dps_ttm_gbp": 0.84,
+      "roe": 0.33383,
+      "payout": 0.5886482586843946,
+      "ke": 0.0756598,
+      "g": 0.0349,
+      "value_per_share": 21.3388,
+      "derivation": [
+        "g capped: ROE x retention 13.73% from a single-year base exceeds the sustainable-perpetual cap 0.7 x risk-free = 3.49%",
+        "g = ROE 33.4% x retention 41% = 3.49% (raw 13.73%, capped)",
+        "D1 = DPS TTM 0.84 x (1+g) = 0.87",
+        "value = D1 / (ke 7.57% - g 3.49%) = 21.34"
+      ]
+    },
+    "comps": {
+      "entries": [
+        {
+          "peer": "AZN.L",
+          "ev_ebitda": 14.421952227420098,
+          "pe": 25.39732030787838
+        },
+        {
+          "peer": "NVS",
+          "ev_ebitda": 12.651782691817441,
+          "pe": 19.079185698653163
+        },
+        {
+          "peer": "PFE",
+          "ev_ebitda": 12.394564178158783,
+          "pe": 20.28734662231873
+        },
+        {
+          "peer": "MRK",
+          "ev_ebitda": 14.051641300202515,
+          "pe": 19.850634733555573
+        }
+      ],
+      "median_ev_ebitda": 13.351711996009978,
+      "median_pe": 20.06899067793715,
+      "implied_price_pe": 28.64,
+      "implied_price_ev_ebitda": 31.24,
+      "derivation": [
+        "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E <= 60x, EV/EBITDA <= 30x)",
+        "P/E leg: median 20.1x x EPS 1.43 = 28.64",
+        "EV/EBITDA leg: median 13.4x x EBITDA 10,402m - net debt 13,731m = equity 125,154m / 4,006m shares = 31.24"
+      ]
+    }
+  },
+  "market_context": {
+    "price_gbp_at_publication": 18.775,
+    "price_source": "Yahoo Finance (yfinance fast_info)",
+    "currency_note": "LSE quotes GBp; converted to GBP"
+  },
+  "provenance": {
+    "fx": {
+      "source": "n/a",
+      "retrieved_at": "2026-09-19T09:18:01.566150+00:00",
+      "derivation": "native GBP",
+      "url": ""
+    },
+    "income_statement": {
+      "source": "Yahoo Finance income_stmt (latest FY)",
+      "retrieved_at": "2026-09-19T09:18:01.629392+00:00",
+      "derivation": "converted GBP->GBP at spot"
+    },
+    "cash_flow": {
+      "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
+      "retrieved_at": "2026-09-19T09:18:01.692628+00:00",
+      "derivation": "FCF = OCF + capex (capex negative), GBP->GBP"
+    },
+    "balance_sheet": {
+      "source": "Yahoo Finance balance_sheet (latest FY)",
+      "retrieved_at": "2026-09-19T09:18:01.786019+00:00",
+      "derivation": "net debt = total debt - cash & ST investments"
+    },
+    "dividends": {
+      "source": "Yahoo Finance Ticker.dividends (actual payments)",
+      "retrieved_at": "2026-09-19T09:18:02.097208+00:00",
+      "derivation": "DPS TTM = sum of payments dated within 365d (84.0000 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
+    },
+    "risk_free_rate": {
+      "source": "OECD long-term govt bond yield via FRED",
+      "retrieved_at": "2026-09-19T09:18:03.141541+00:00",
+      "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+    },
+    "cost_of_equity": [
+      {
+        "source": "OECD long-term govt bond yield via FRED",
+        "retrieved_at": "2026-09-19T09:18:03.044798+00:00",
+        "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
+      },
+      {
+        "source": "Damodaran country risk premium (Western Europe)",
+        "retrieved_at": "2026-09-19T09:18:03.044798+00:00",
+        "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
+        "url": "https://pages.stern.nyu.edu/~adamodar/"
+      },
+      {
+        "source": "CAPM",
+        "retrieved_at": "2026-09-19T09:18:03.044798+00:00",
+        "derivation": "ke = 4.99% + 0.60 x 4.31% = 7.57%"
+      },
+      {
+        "source": "Blume (1971) beta adjustment + 0.40 beta floor",
+        "retrieved_at": "2026-09-19T09:18:02.949736+00:00",
+        "derivation": "beta raw 0.29 floored at 0.40 -> adjusted 0.60 (0.67*raw + 0.33)"
+      }
+    ],
+    "peer_multiples": [
+      "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E <= 60x, EV/EBITDA <= 30x)",
+      "P/E leg: median 20.1x x EPS 1.43 = 28.64",
+      "EV/EBITDA leg: median 13.4x x EBITDA 10,402m - net debt 13,731m = equity 125,154m / 4,006m shares = 31.24"
+    ],
+    "blend": [
+      "blend: ddm 21.34 x 40%",
+      "blend: comps_pe 28.64 x 40%",
+      "blend: comps_ev_ebitda 31.24 x 20%"
+    ],
+    "model_choices": {
+      "dcf_weight": 0.6,
+      "ddm_weight": 0.2,
+      "comps_weight": 0.2,
+      "growth_damping": "50% toward 0, floor/cap -5%/+15%",
+      "terminal_g_rule": "min(rf, explicit CAGR/2)",
+      "recommendation_bands": "BUY >= +15% upside, SELL <= -15%, else HOLD"
+    }
+  },
+  "audit_refs": [
+    {
+      "ts": "2026-09-19T09:13:17.343556+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "currency": "GBP",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:13:17.505318+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.16
+    },
+    {
+      "ts": "2026-09-19T09:13:42.612238+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "currency": "GBP",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:13:42.795030+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.17
+    },
+    {
+      "ts": "2026-09-19T09:17:35.393963+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "currency": "GBP",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:17:35.572684+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.18
+    },
+    {
+      "ts": "2026-09-19T09:18:02.097208+00:00",
+      "event": "fetch_fundamentals",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "currency": "GBP",
+      "warnings": []
+    },
+    {
+      "ts": "2026-09-19T09:18:02.245633+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "GSK.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.13
+    }
+  ],
+  "benchmark": "^FTSE",
+  "review_period_months": 3,
+  "review_due_at": "2026-09-19T09:18:03.157778+00:00",
+  "addenda": [],
+  "publication_audit_id": "2026-09-19T09:18:03.157778+00:00"
+}

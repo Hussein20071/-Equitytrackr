@@ -4,8 +4,8 @@
   "name": "BP",
   "status": "published",
   "analyst": "system",
-  "created_at": "2026-09-27T13:58:55.450611+00:00",
-  "published_at": "2026-09-27T13:58:55.465407+00:00",
+  "created_at": "2026-09-27T13:55:09.155347+00:00",
+  "published_at": "2026-09-27T13:55:09.178115+00:00",
   "published_by": "auto_notes",
   "headline": "HOLD: target GBP 5.84 vs price GBP 5.58 (+4.6% upside) on blended DCF/DDM/comps",
   "thesis": {
@@ -29,7 +29,7 @@
   "upside_pct": 4.57,
   "valuation_inputs": {
     "is_bank": false,
-    "beta_raw": -0.3229,
+    "beta_raw": -0.22,
     "beta_adjusted": 0.5980000000000001,
     "dcf": {
       "base_fcf_m": 8504.949705998675,
@@ -90,8 +90,7 @@
         "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "ke = 4.99% + 0.60 x 4.31% = 7.57%",
-        "beta = cov(r_stock, r_bench) / var(r_bench) = -0.32 over 52 weekly observations (Yahoo feed beta unavailable)",
-        "beta raw -0.32 floored at 0.40 -> adjusted 0.60 (0.67*raw + 0.33)"
+        "beta raw -0.22 floored at 0.40 -> adjusted 0.60 (0.67*raw + 0.33)"
       ]
     },
     "ddm": {
@@ -143,63 +142,58 @@
   "provenance": {
     "fx": {
       "source": "Yahoo Finance FX (yfinance)",
-      "retrieved_at": "2026-09-27T13:58:53.280756+00:00",
+      "retrieved_at": "2026-09-27T13:55:07.047801+00:00",
       "derivation": "1 USD = 0.7545 GBP (spot GBPUSD=X inverted)",
       "url": ""
     },
     "income_statement": {
       "source": "Yahoo Finance income_stmt (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:53.417468+00:00",
+      "retrieved_at": "2026-09-27T13:55:07.215437+00:00",
       "derivation": "converted USD->GBP at spot"
     },
     "cash_flow": {
       "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
-      "retrieved_at": "2026-09-27T13:58:53.560280+00:00",
+      "retrieved_at": "2026-09-27T13:55:07.392569+00:00",
       "derivation": "FCF = OCF + capex (capex negative), USD->GBP"
     },
     "balance_sheet": {
       "source": "Yahoo Finance balance_sheet (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:53.765357+00:00",
+      "retrieved_at": "2026-09-27T13:55:07.568057+00:00",
       "derivation": "net debt = total debt - cash & ST investments"
     },
     "dividends": {
       "source": "Yahoo Finance Ticker.dividends (actual payments)",
-      "retrieved_at": "2026-09-27T13:58:54.130599+00:00",
+      "retrieved_at": "2026-09-27T13:55:08.051556+00:00",
       "derivation": "DPS TTM = sum of payments dated within 365d (31.2499 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
     },
     "risk_free_rate": {
       "source": "OECD long-term govt bond yield via FRED",
-      "retrieved_at": "2026-09-27T13:58:55.450611+00:00",
+      "retrieved_at": "2026-09-27T13:55:09.155347+00:00",
       "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
       "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
     },
     "cost_of_equity": [
       {
         "source": "OECD long-term govt bond yield via FRED",
-        "retrieved_at": "2026-09-27T13:58:55.313939+00:00",
+        "retrieved_at": "2026-09-27T13:55:09.019022+00:00",
         "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
       },
       {
         "source": "Damodaran country risk premium (Western Europe)",
-        "retrieved_at": "2026-09-27T13:58:55.313939+00:00",
+        "retrieved_at": "2026-09-27T13:55:09.019022+00:00",
         "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "url": "https://pages.stern.nyu.edu/~adamodar/"
       },
       {
         "source": "CAPM",
-        "retrieved_at": "2026-09-27T13:58:55.313939+00:00",
+        "retrieved_at": "2026-09-27T13:55:09.019022+00:00",
         "derivation": "ke = 4.99% + 0.60 x 4.31% = 7.57%"
       },
       {
-        "source": "OLS beta: BP.L vs ^FTSE weekly returns, 1y",
-        "retrieved_at": "2026-09-27T13:58:55.195274+00:00",
-        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = -0.32 over 52 weekly observations (Yahoo feed beta unavailable)"
-      },
-      {
         "source": "Blume (1971) beta adjustment + 0.40 beta floor",
-        "retrieved_at": "2026-09-27T13:58:55.195274+00:00",
-        "derivation": "beta raw -0.32 floored at 0.40 -> adjusted 0.60 (0.67*raw + 0.33)"
+        "retrieved_at": "2026-09-27T13:55:08.924468+00:00",
+        "derivation": "beta raw -0.22 floored at 0.40 -> adjusted 0.60 (0.67*raw + 0.33)"
       }
     ],
     "peer_multiples": [
@@ -251,41 +245,11 @@
       "status": "ok",
       "n": 1,
       "elapsed_s": 0.22
-    },
-    {
-      "ts": "2026-09-27T13:58:43.121465+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "BP.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.22
-    },
-    {
-      "ts": "2026-09-27T13:58:54.130599+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "BP.L"
-      ],
-      "status": "ok",
-      "currency": "USD",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:58:54.360228+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "BP.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.22
     }
   ],
   "benchmark": "^FTSE",
   "review_period_months": 3,
-  "review_due_at": "2026-09-27T13:58:55.465407+00:00",
+  "review_due_at": "2026-09-27T13:55:09.176051+00:00",
   "addenda": [],
-  "publication_audit_id": "2026-09-27T13:58:55.465407+00:00"
+  "publication_audit_id": "2026-09-27T13:55:09.176051+00:00"
 }

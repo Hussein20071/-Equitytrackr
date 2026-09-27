@@ -4,8 +4,8 @@
   "name": "National Grid",
   "status": "published",
   "analyst": "system",
-  "created_at": "2026-09-27T13:58:58.220521+00:00",
-  "published_at": "2026-09-27T13:58:58.235692+00:00",
+  "created_at": "2026-09-27T13:55:11.355130+00:00",
+  "published_at": "2026-09-27T13:55:11.368720+00:00",
   "published_by": "auto_notes",
   "headline": "HOLD: target GBP 11.17 vs price GBP 11.27 (-0.9% upside) on blended DCF/DDM/comps",
   "thesis": {
@@ -29,8 +29,8 @@
   "upside_pct": -0.89,
   "valuation_inputs": {
     "is_bank": false,
-    "beta_raw": 1.0666,
-    "beta_adjusted": 1.0446220000000002,
+    "beta_raw": 0.589,
+    "beta_adjusted": 0.72463,
     "dcf": {
       "base_fcf_m": -2746.0,
       "fcf_growth_path": [
@@ -41,8 +41,8 @@
         0.0
       ],
       "terminal_growth": 0.025,
-      "wacc": 0.09490920820000001,
-      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.0446220000000002; implied pre-tax kd 3.6% disclosed only",
+      "wacc": 0.081117553,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.72463; implied pre-tax kd 3.6% disclosed only",
       "net_debt_m": 43034.0,
       "shares_m": 5026.834181,
       "result": {
@@ -60,11 +60,11 @@
       "dps_ttm_gbp": 0.79370001,
       "roe": 0.08406,
       "payout": 1.2310392902585752,
-      "ke": 0.09490920820000001,
+      "ke": 0.081117553,
       "g": -0.019421162739135828,
       "value_per_share": null,
       "derivation": [
-        "DDM skipped: g=-1.94% not < ke*0.9=8.54%"
+        "DDM skipped: g=-1.94% not < ke*0.9=7.30%"
       ]
     },
     "comps": {
@@ -109,63 +109,58 @@
   "provenance": {
     "fx": {
       "source": "n/a",
-      "retrieved_at": "2026-09-27T13:58:56.000552+00:00",
+      "retrieved_at": "2026-09-27T13:55:09.396016+00:00",
       "derivation": "native GBP",
       "url": ""
     },
     "income_statement": {
       "source": "Yahoo Finance income_stmt (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:56.151237+00:00",
+      "retrieved_at": "2026-09-27T13:55:09.553982+00:00",
       "derivation": "converted GBP->GBP at spot"
     },
     "cash_flow": {
       "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
-      "retrieved_at": "2026-09-27T13:58:56.350328+00:00",
+      "retrieved_at": "2026-09-27T13:55:09.830520+00:00",
       "derivation": "FCF = OCF + capex (capex negative), GBP->GBP"
     },
     "balance_sheet": {
       "source": "Yahoo Finance balance_sheet (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:56.561860+00:00",
+      "retrieved_at": "2026-09-27T13:55:10.036062+00:00",
       "derivation": "net debt = total debt - cash & ST investments"
     },
     "dividends": {
       "source": "Yahoo Finance Ticker.dividends (actual payments)",
-      "retrieved_at": "2026-09-27T13:58:56.860637+00:00",
+      "retrieved_at": "2026-09-27T13:55:10.270944+00:00",
       "derivation": "DPS TTM = sum of payments dated within 365d (79.3700 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
     },
     "risk_free_rate": {
       "source": "OECD long-term govt bond yield via FRED",
-      "retrieved_at": "2026-09-27T13:58:58.220521+00:00",
+      "retrieved_at": "2026-09-27T13:55:11.355130+00:00",
       "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
       "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
     },
     "cost_of_equity": [
       {
         "source": "OECD long-term govt bond yield via FRED",
-        "retrieved_at": "2026-09-27T13:58:58.111431+00:00",
+        "retrieved_at": "2026-09-27T13:55:11.251884+00:00",
         "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
       },
       {
         "source": "Damodaran country risk premium (Western Europe)",
-        "retrieved_at": "2026-09-27T13:58:58.111431+00:00",
+        "retrieved_at": "2026-09-27T13:55:11.251884+00:00",
         "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "url": "https://pages.stern.nyu.edu/~adamodar/"
       },
       {
         "source": "CAPM",
-        "retrieved_at": "2026-09-27T13:58:58.111431+00:00",
-        "derivation": "ke = 4.99% + 1.04 x 4.31% = 9.49%"
-      },
-      {
-        "source": "OLS beta: NG.L vs ^FTSE weekly returns, 1y",
-        "retrieved_at": "2026-09-27T13:58:58.010509+00:00",
-        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = 1.07 over 52 weekly observations (Yahoo feed beta unavailable)"
+        "retrieved_at": "2026-09-27T13:55:11.251884+00:00",
+        "derivation": "ke = 4.99% + 0.72 x 4.31% = 8.11%"
       },
       {
         "source": "Blume (1971) beta adjustment + 0.40 beta floor",
-        "retrieved_at": "2026-09-27T13:58:58.010509+00:00",
-        "derivation": "beta raw 1.07 -> adjusted 1.04 (0.67*raw + 0.33)"
+        "retrieved_at": "2026-09-27T13:55:11.159116+00:00",
+        "derivation": "beta raw 0.59 -> adjusted 0.72 (0.67*raw + 0.33)"
       }
     ],
     "peer_multiples": [
@@ -206,31 +201,11 @@
       "status": "ok",
       "n": 1,
       "elapsed_s": 0.15
-    },
-    {
-      "ts": "2026-09-27T13:58:56.860637+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "NG.L"
-      ],
-      "status": "ok",
-      "currency": "GBP",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:58:57.030447+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "NG.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.15
     }
   ],
   "benchmark": "^FTSE",
   "review_period_months": 3,
-  "review_due_at": "2026-09-27T13:58:58.235692+00:00",
+  "review_due_at": "2026-09-27T13:55:11.367366+00:00",
   "addenda": [],
-  "publication_audit_id": "2026-09-27T13:58:58.235692+00:00"
+  "publication_audit_id": "2026-09-27T13:55:11.367366+00:00"
 }

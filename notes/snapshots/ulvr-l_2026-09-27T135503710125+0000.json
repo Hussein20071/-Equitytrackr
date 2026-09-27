@@ -4,35 +4,35 @@
   "name": "Unilever",
   "status": "published",
   "analyst": "system",
-  "created_at": "2026-09-27T13:58:49.794871+00:00",
-  "published_at": "2026-09-27T13:58:49.811295+00:00",
+  "created_at": "2026-09-27T13:55:03.684838+00:00",
+  "published_at": "2026-09-27T13:55:03.710125+00:00",
   "published_by": "auto_notes",
-  "headline": "HOLD: target GBP 49.99 vs price GBP 46.65 (+7.2% upside) on blended DCF/DDM/comps",
+  "headline": "HOLD: target GBP 52.41 vs price GBP 46.65 (+12.4% upside) on blended DCF/DDM/comps",
   "thesis": {
-    "summary": "Systematic note generated from live data. Market price GBP 46.65 against a blended 12-month target of GBP 49.99 (weights {'dcf': 0.545, 'ddm': 0.182, 'comps_pe': 0.182, 'comps_ev_ebitda': 0.091}). The 2-stage FCF DCF on a base of GBP 5,812m latest-FY free cash flow (FX-converted from EUR) values the shares at GBP 41.07. Gordon DDM on trailing DPS GBP 2.09 (g = ROE x retention) values them at GBP 47.41. Peer-median P/E of 21.2x applied to EPS of GBP 3.78 implies GBP 80.30. Reported FCF has trended up over the last 4 financial years (GBP 4,792m -> GBP 5,812m), which drives the growth path shown in the inputs table.",
+    "summary": "Systematic note generated from live data. Market price GBP 46.65 against a blended 12-month target of GBP 52.41 (weights {'dcf': 0.545, 'ddm': 0.182, 'comps_pe': 0.182, 'comps_ev_ebitda': 0.091}). The 2-stage FCF DCF on a base of GBP 5,812m latest-FY free cash flow (FX-converted from EUR) values the shares at GBP 44.25. Gordon DDM on trailing DPS GBP 2.09 (g = ROE x retention) values them at GBP 51.18. Peer-median P/E of 21.2x applied to EPS of GBP 3.78 implies GBP 80.30. Reported FCF has trended up over the last 4 financial years (GBP 4,792m -> GBP 5,812m), which drives the growth path shown in the inputs table.",
     "catalysts": [
-      "Convergence toward the blended target of GBP 49.99 (+7.2%) over the 3-month review window",
+      "Convergence toward the blended target of GBP 52.41 (+12.4%) over the 3-month review window",
       "Next FY results: reported FCF vs the latest-FY base used in the DCF"
     ],
     "risks": [
-      "Thesis invalidation: price sustaining beyond GBP 49.99 in the opposite direction of the recommendation for 10+ sessions",
+      "Thesis invalidation: price sustaining beyond GBP 52.41 in the opposite direction of the recommendation for 10+ sessions",
       "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
       "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
     ]
   },
   "recommendation": "HOLD",
-  "price_target_gbp": 49.99,
+  "price_target_gbp": 52.41,
   "target_weights": {
     "dcf": 0.545,
     "ddm": 0.182,
     "comps_pe": 0.182,
     "comps_ev_ebitda": 0.091
   },
-  "upside_pct": 7.17,
+  "upside_pct": 12.36,
   "valuation_inputs": {
     "is_bank": false,
-    "beta_raw": 0.5694,
-    "beta_adjusted": 0.7114980000000001,
+    "beta_raw": 0.453,
+    "beta_adjusted": 0.63351,
     "dcf": {
       "base_fcf_m": 5812.1937986975445,
       "fcf_growth_path": [
@@ -43,71 +43,70 @@
         0.0083
       ],
       "terminal_growth": 0.025,
-      "wacc": 0.0805515638,
-      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.7114980000000001; implied pre-tax kd 4.2% disclosed only",
+      "wacc": 0.077190281,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.63351; implied pre-tax kd 4.2% disclosed only",
       "net_debt_m": 18281.022039726453,
       "shares_m": 2153.264756,
       "result": {
-        "value_per_share": 41.07,
-        "pv_explicit_m": 25078.6,
-        "pv_terminal_m": 81645.1,
-        "equity_value_m": 88442.7,
+        "value_per_share": 44.25,
+        "pv_explicit_m": 25305.4,
+        "pv_terminal_m": 88267.8,
+        "equity_value_m": 95292.2,
         "projections": [
           {
             "year": 1,
             "growth": 0.0332,
             "fcf_m": 6005.2,
-            "pv_m": 5557.5
+            "pv_m": 5574.8
           },
           {
             "year": 2,
             "growth": 0.0332,
             "fcf_m": 6204.5,
-            "pv_m": 5314.0
+            "pv_m": 5347.2
           },
           {
             "year": 3,
             "growth": 0.0249,
             "fcf_m": 6359.0,
-            "pv_m": 5040.3
+            "pv_m": 5087.6
           },
           {
             "year": 4,
             "growth": 0.0166,
             "fcf_m": 6464.6,
-            "pv_m": 4742.0
+            "pv_m": 4801.4
           },
           {
             "year": 5,
             "growth": 0.0083,
             "fcf_m": 6518.2,
-            "pv_m": 4424.9
+            "pv_m": 4494.4
           }
         ]
       },
       "derivation": [
         "growth: FCF CAGR +6.6% over 3y, 50% damped -> +3.3% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)",
         "terminal g = min(rf 4.99%, explicit CAGR/2) = 2.50%",
-        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.7114980000000001; implied pre-tax kd 4.2% disclosed only",
+        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.63351; implied pre-tax kd 4.2% disclosed only",
         "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
-        "ke = 4.99% + 0.71 x 4.31% = 8.06%",
-        "beta = cov(r_stock, r_bench) / var(r_bench) = 0.57 over 52 weekly observations (Yahoo feed beta unavailable)",
-        "beta raw 0.57 -> adjusted 0.71 (0.67*raw + 0.33)"
+        "ke = 4.99% + 0.63 x 4.31% = 7.72%",
+        "beta raw 0.45 -> adjusted 0.63 (0.67*raw + 0.33)"
       ]
     },
     "ddm": {
       "dps_ttm_gbp": 2.09045002,
       "roe": 0.31869,
       "payout": 0.5528094567458203,
-      "ke": 0.0805515638,
+      "ke": 0.077190281,
       "g": 0.0349,
-      "value_per_share": 47.4114,
+      "value_per_share": 51.1816,
       "derivation": [
         "g capped: ROE x retention 14.25% from a single-year base exceeds the sustainable-perpetual cap 0.7 x risk-free = 3.49%",
         "g = ROE 31.9% x retention 45% = 3.49% (raw 14.25%, capped)",
         "D1 = DPS TTM 2.09 x (1+g) = 2.16",
-        "value = D1 / (ke 8.06% - g 3.49%) = 47.41"
+        "value = D1 / (ke 7.72% - g 3.49%) = 51.18"
       ]
     },
     "comps": {
@@ -152,63 +151,58 @@
   "provenance": {
     "fx": {
       "source": "Yahoo Finance FX (yfinance)",
-      "retrieved_at": "2026-09-27T13:58:47.585274+00:00",
+      "retrieved_at": "2026-09-27T13:55:00.810180+00:00",
       "derivation": "1 EUR = 0.8599 GBP (spot GBPEUR=X inverted)",
       "url": ""
     },
     "income_statement": {
       "source": "Yahoo Finance income_stmt (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:47.730426+00:00",
+      "retrieved_at": "2026-09-27T13:55:00.950095+00:00",
       "derivation": "converted EUR->GBP at spot"
     },
     "cash_flow": {
       "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
-      "retrieved_at": "2026-09-27T13:58:47.905451+00:00",
+      "retrieved_at": "2026-09-27T13:55:01.076244+00:00",
       "derivation": "FCF = OCF + capex (capex negative), EUR->GBP"
     },
     "balance_sheet": {
       "source": "Yahoo Finance balance_sheet (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:48.100604+00:00",
+      "retrieved_at": "2026-09-27T13:55:01.256711+00:00",
       "derivation": "net debt = total debt - cash & ST investments"
     },
     "dividends": {
       "source": "Yahoo Finance Ticker.dividends (actual payments)",
-      "retrieved_at": "2026-09-27T13:58:48.424180+00:00",
+      "retrieved_at": "2026-09-27T13:55:01.827851+00:00",
       "derivation": "DPS TTM = sum of payments dated within 365d (209.0450 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
     },
     "risk_free_rate": {
       "source": "OECD long-term govt bond yield via FRED",
-      "retrieved_at": "2026-09-27T13:58:49.794871+00:00",
+      "retrieved_at": "2026-09-27T13:55:03.684838+00:00",
       "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
       "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
     },
     "cost_of_equity": [
       {
         "source": "OECD long-term govt bond yield via FRED",
-        "retrieved_at": "2026-09-27T13:58:49.691429+00:00",
+        "retrieved_at": "2026-09-27T13:55:03.587408+00:00",
         "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
       },
       {
         "source": "Damodaran country risk premium (Western Europe)",
-        "retrieved_at": "2026-09-27T13:58:49.691429+00:00",
+        "retrieved_at": "2026-09-27T13:55:03.587408+00:00",
         "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "url": "https://pages.stern.nyu.edu/~adamodar/"
       },
       {
         "source": "CAPM",
-        "retrieved_at": "2026-09-27T13:58:49.691429+00:00",
-        "derivation": "ke = 4.99% + 0.71 x 4.31% = 8.06%"
-      },
-      {
-        "source": "OLS beta: ULVR.L vs ^FTSE weekly returns, 1y",
-        "retrieved_at": "2026-09-27T13:58:49.596262+00:00",
-        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = 0.57 over 52 weekly observations (Yahoo feed beta unavailable)"
+        "retrieved_at": "2026-09-27T13:55:03.587408+00:00",
+        "derivation": "ke = 4.99% + 0.63 x 4.31% = 7.72%"
       },
       {
         "source": "Blume (1971) beta adjustment + 0.40 beta floor",
-        "retrieved_at": "2026-09-27T13:58:49.596262+00:00",
-        "derivation": "beta raw 0.57 -> adjusted 0.71 (0.67*raw + 0.33)"
+        "retrieved_at": "2026-09-27T13:55:03.496579+00:00",
+        "derivation": "beta raw 0.45 -> adjusted 0.63 (0.67*raw + 0.33)"
       }
     ],
     "peer_multiples": [
@@ -217,8 +211,8 @@
       "EV/EBITDA leg: median 12.7x x EBITDA 9,583m - net debt 18,281m = equity 103,372m / 2,153m shares = 48.01"
     ],
     "blend": [
-      "blend: dcf 41.07 x 55%",
-      "blend: ddm 47.41 x 18%",
+      "blend: dcf 44.25 x 55%",
+      "blend: ddm 51.18 x 18%",
       "blend: comps_pe 80.30 x 18%",
       "blend: comps_ev_ebitda 48.01 x 9%"
     ],
@@ -251,31 +245,11 @@
       "status": "ok",
       "n": 1,
       "elapsed_s": 0.2
-    },
-    {
-      "ts": "2026-09-27T13:58:48.424180+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "ULVR.L"
-      ],
-      "status": "ok",
-      "currency": "EUR",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:58:48.608572+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "ULVR.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.17
     }
   ],
   "benchmark": "^FTSE",
   "review_period_months": 3,
-  "review_due_at": "2026-09-27T13:58:49.811295+00:00",
+  "review_due_at": "2026-09-27T13:55:03.709114+00:00",
   "addenda": [],
-  "publication_audit_id": "2026-09-27T13:58:49.811295+00:00"
+  "publication_audit_id": "2026-09-27T13:55:03.709114+00:00"
 }

@@ -345,6 +345,92 @@ class UnitsTableTests(unittest.TestCase):
         self.assertEqual(by["^FTSE"]["pence"], "")  # index points, not pence
 
 
+class ScenarioTests(unittest.TestCase):
+    """Reader scenarios re-derive the published valuation; 0.0pp is the anchor."""
+
+    def _note(self):
+        return {
+            "ticker": "TEST.L", "price_target_gbp": 20.47,
+            "target_weights": {"dcf": 0.6, "ddm": 0.2, "comps_pe": 0.2},
+            "market_context": {"price_gbp_at_publication": 18.0},
+            "valuation_inputs": {
+                "dcf": {"base_fcf_m": 100.0, "fcf_growth_path": [0.05] * 5,
+                        "terminal_growth": 0.02, "wacc": 0.08,
+                        "net_debt_m": 50.0, "shares_m": 100.0,
+                        "result": {"value_per_share": 18.87}},
+                "ddm": {"dps_ttm_gbp": 1.0, "g": 0.03, "ke": 0.07,
+                        "value_per_share": 25.75},
+                "comps": {"implied_price_pe": 20.0,
+                          "implied_price_ev_ebitda": None},
+            },
+        }
+
+    def test_anchor_is_published_target(self):
+        from tracker.scenario import scenario_grid
+        grid = scenario_grid(self._note())
+        anchor = next(r for r in grid if r["shock"] == 0.0)
+        self.assertEqual(anchor["target"], 20.47)
+        self.assertTrue(anchor["published"])
+
+    def test_higher_rate_lowers_value_and_stays_continuous(self):
+        from tracker.scenario import scenario_grid
+        grid = scenario_grid(self._note())
+        by = {r["shock"]: r["target"] for r in grid}
+        pub = 20.47
+        self.assertLess(by[0.005], pub)
+        self.assertGreater(by[-0.005], pub)
+        self.assertLess(by[0.01], by[0.005])          # monotone in the shock
+        # A 5y Gordon DCF carries most PV in the terminal period, so ±0.5pp
+        # legitimately moves the value ~5-8% (production notes: ~7%). Bound
+        # only against explosion, not against the true sensitivity.
+        self.assertLess(abs(by[0.005] - pub), pub * 0.12)
+
+    def test_comps_only_note_is_rate_flat(self):
+        from tracker.scenario import scenario_grid
+        n = self._note()
+        n["target_weights"] = {"comps_pe": 1.0}
+        n["price_target_gbp"] = 20.0
+        grid = scenario_grid(n)
+        self.assertEqual({r["target"] for r in grid}, {20.0})
+
+    def test_ddm_leg_drops_when_ke_gtr_g_fails(self):
+        from tracker.scenario import scenario_grid
+        n = self._note()
+        n["valuation_inputs"]["ddm"]["g"] = 0.12   # ke 0.07 can't clear g
+        n["valuation_inputs"]["ddm"]["value_per_share"] = None
+        grid = scenario_grid(n)
+        shocked = next(r for r in grid if r["shock"] == 0.005)
+        self.assertNotIn("ddm", shocked["legs"])
+
+    def test_diff_quotes_real_deltas_only(self):
+        from tracker.scenario import diff_quotes
+        prev = {"AZN.L": {"price_gbp": 100.0}, "^FTSE": {"price_gbp": 10000.0}}
+        new = {"AZN.L": {"price_gbp": 101.5}, "^FTSE": {"price_gbp": 10500.0}}
+        out = diff_quotes(prev, new)
+        self.assertIn("AZN.L +1.50% since last refresh", out["movers"])
+        self.assertFalse(out["big_move"])
+        big = diff_quotes(prev, {"AZN.L": {"price_gbp": 102.5}})
+        self.assertTrue(big["big_move"])
+        self.assertIsNone(diff_quotes(None, new))
+
+
+class BetaRegressionTests(unittest.TestCase):
+    """Per-name OLS beta replaces the collapsed peer-median fallback."""
+
+    def test_honest_failure_on_empty_history(self):
+        import tempfile
+        from unittest import mock
+
+        from tracker import data as tracker_data
+
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(tracker_data, "fetch_history",
+                                   return_value=pd.DataFrame()):
+                beta, prov = tracker_data.regression_beta("TEST.L")
+        self.assertIsNone(beta)
+        self.assertIn("empty", prov["derivation"])
+
+
 class DayChangeTests(unittest.TestCase):
     """Day column = last close vs prev close — the number Yahoo shows."""
 

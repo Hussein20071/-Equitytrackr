@@ -21,3 +21,4 @@ project-id
 # OS junk
 Thumbs.db
 .DS_Store
+*.lock

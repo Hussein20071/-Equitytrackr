@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import audit, config, data, performance, reporting, research
+from . import audit, config, data, performance, reporting, research, scenario
 
 # Written into the deploy bundle each cycle; the dashboard JS polls it so an
 # open tab can toast "Prices updated — view now" and auto-reload on a timer.
@@ -56,6 +56,16 @@ def refresh_once(reason: str = "scheduled") -> dict:
     valid_rows = [r for r in perf_rows if r]
     summary = performance.summarize(valid_rows)
 
+    # Refresh-over-refresh diff: what actually moved since the previous cycle.
+    prev_meta = {}
+    if REFRESH_META.exists():
+        try:
+            prev_meta = json.loads(REFRESH_META.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            prev_meta = {}
+    prev_quotes = prev_meta.get("quotes_snapshot")
+    changes = scenario.diff_quotes(prev_quotes, quotes)
+
     # One timestamp shared by the dashboard, note pages, audit record and
     # refresh_meta.json — the client compares these, so they must be identical
     # or every page load would falsely believe newer data exists.
@@ -80,6 +90,8 @@ def refresh_once(reason: str = "scheduled") -> dict:
         monthly_by_ticker=monthly,
         series_by_ticker=series_by_ticker,
         caption=caption,
+        changes=changes,
+        status_meta={"refreshed_at": now_ts},
     )
     # Deployable static-site bundle (GitHub Pages root) + raw audit log
     reporting.write_publish_bundle()
@@ -92,6 +104,10 @@ def refresh_once(reason: str = "scheduled") -> dict:
         "quotes": len(quotes),
         "elapsed_s": round(time.time() - t0, 2),
         "market_open": _running_yn(),
+        "changes": changes,
+        "quotes_snapshot": {tk: {"price_gbp": q.get("price_gbp")}
+                            for tk, q in (quotes or {}).items()
+                            if not tk.startswith("_")},
     }
     REFRESH_META.parent.mkdir(parents=True, exist_ok=True)
     REFRESH_META.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
@@ -107,6 +123,18 @@ def refresh_once(reason: str = "scheduled") -> dict:
     return stats
 
 
+def _acquire_loop_lock() -> bool:
+    """Singleton guard: the loop process itself owns a kernel mutex.
+
+    Parent-side checks cannot prevent a spawn race when launchers retry
+    under multiple interpreters; a kernel mutex owned by the CHILD makes
+    the losing process exit no matter how it was started.
+    """
+    from .single_instance import acquire
+
+    return acquire("FreebuffTrackerLoop")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Live refresh loop for the tracker")
     ap.add_argument("--once", action="store_true", help="run a single refresh and exit")
@@ -114,6 +142,10 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     interval = args.interval or config.REFRESH_INTERVAL_MINUTES
+
+    if not _acquire_loop_lock():
+        print("another refresh loop is already running (loop.lock held) -- exiting")
+        return 0
 
     if args.once:
         refresh_once("manual")

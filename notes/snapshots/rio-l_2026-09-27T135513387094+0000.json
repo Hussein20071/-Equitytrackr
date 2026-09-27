@@ -4,33 +4,33 @@
   "name": "Rio Tinto",
   "status": "published",
   "analyst": "system",
-  "created_at": "2026-09-27T13:59:01.123495+00:00",
-  "published_at": "2026-09-27T13:59:01.135210+00:00",
+  "created_at": "2026-09-27T13:55:13.382012+00:00",
+  "published_at": "2026-09-27T13:55:13.387094+00:00",
   "published_by": "auto_notes",
-  "headline": "BUY: target GBP 99.23 vs price GBP 70.88 (+40.0% upside) on blended DCF/DDM/comps",
+  "headline": "BUY: target GBP 117.91 vs price GBP 70.88 (+66.3% upside) on blended DCF/DDM/comps",
   "thesis": {
-    "summary": "Systematic note generated from live data. Market price GBP 70.88 against a blended 12-month target of GBP 99.23 (weights {'ddm': 0.667, 'comps_ev_ebitda': 0.333}). Gordon DDM on trailing DPS GBP 4.57 (g = ROE x retention) values them at GBP 69.78. Reported FCF has trended down over the last 4 financial years (GBP 7,080m -> GBP nanm), which drives the growth path shown in the inputs table.",
+    "summary": "Systematic note generated from live data. Market price GBP 70.88 against a blended 12-month target of GBP 117.91 (weights {'ddm': 0.667, 'comps_ev_ebitda': 0.333}). Gordon DDM on trailing DPS GBP 4.57 (g = ROE x retention) values them at GBP 97.80. Reported FCF has trended down over the last 4 financial years (GBP 7,080m -> GBP nanm), which drives the growth path shown in the inputs table.",
     "catalysts": [
-      "Convergence toward the blended target of GBP 99.23 (+40.0%) over the 3-month review window",
+      "Convergence toward the blended target of GBP 117.91 (+66.3%) over the 3-month review window",
       "Next FY results: reported FCF vs the latest-FY base used in the DCF"
     ],
     "risks": [
-      "Thesis invalidation: price sustaining beyond GBP 99.23 in the opposite direction of the recommendation for 10+ sessions",
+      "Thesis invalidation: price sustaining beyond GBP 117.91 in the opposite direction of the recommendation for 10+ sessions",
       "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
       "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
     ]
   },
   "recommendation": "BUY",
-  "price_target_gbp": 99.23,
+  "price_target_gbp": 117.91,
   "target_weights": {
     "ddm": 0.667,
     "comps_ev_ebitda": 0.333
   },
-  "upside_pct": 40.0,
+  "upside_pct": 66.35,
   "valuation_inputs": {
     "is_bank": false,
-    "beta_raw": 1.3363,
-    "beta_adjusted": 1.225321,
+    "beta_raw": 0.664,
+    "beta_adjusted": 0.77488,
     "dcf": {
       "base_fcf_m": NaN,
       "fcf_growth_path": [
@@ -41,8 +41,8 @@
         0.0
       ],
       "terminal_growth": 0.0,
-      "wacc": 0.10269733510000001,
-      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.225321; implied pre-tax kd 8.3% disclosed only",
+      "wacc": 0.08328332799999999,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 0.77488; implied pre-tax kd 8.3% disclosed only",
       "net_debt_m": 10924.695421678034,
       "shares_m": 1254.609242,
       "result": {
@@ -60,14 +60,14 @@
       "dps_ttm_gbp": 4.5701231,
       "roe": 0.19312,
       "payout": 0.7625085683375833,
-      "ke": 0.10269733510000001,
+      "ke": 0.08328332799999999,
       "g": 0.0349,
-      "value_per_share": 69.7833,
+      "value_per_share": 97.7958,
       "derivation": [
         "g capped: ROE x retention 4.59% from a single-year base exceeds the sustainable-perpetual cap 0.7 x risk-free = 3.49%",
         "g = ROE 19.3% x retention 24% = 3.49% (raw 4.59%, capped)",
         "D1 = DPS TTM 4.57 x (1+g) = 4.73",
-        "value = D1 / (ke 10.27% - g 3.49%) = 69.78"
+        "value = D1 / (ke 8.33% - g 3.49%) = 97.80"
       ]
     },
     "comps": {
@@ -108,63 +108,58 @@
   "provenance": {
     "fx": {
       "source": "Yahoo Finance FX (yfinance)",
-      "retrieved_at": "2026-09-27T13:58:58.855428+00:00",
+      "retrieved_at": "2026-09-27T13:55:11.608955+00:00",
       "derivation": "1 USD = 0.7545 GBP (spot GBPUSD=X inverted)",
       "url": ""
     },
     "income_statement": {
       "source": "Yahoo Finance income_stmt (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:59.034485+00:00",
+      "retrieved_at": "2026-09-27T13:55:11.781902+00:00",
       "derivation": "converted USD->GBP at spot"
     },
     "cash_flow": {
       "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
-      "retrieved_at": "2026-09-27T13:58:59.220213+00:00",
+      "retrieved_at": "2026-09-27T13:55:11.931168+00:00",
       "derivation": "FCF = OCF + capex (capex negative), USD->GBP"
     },
     "balance_sheet": {
       "source": "Yahoo Finance balance_sheet (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:59.480191+00:00",
+      "retrieved_at": "2026-09-27T13:55:12.145799+00:00",
       "derivation": "net debt = total debt - cash & ST investments"
     },
     "dividends": {
       "source": "Yahoo Finance Ticker.dividends (actual payments)",
-      "retrieved_at": "2026-09-27T13:58:59.802662+00:00",
+      "retrieved_at": "2026-09-27T13:55:12.456856+00:00",
       "derivation": "DPS TTM = sum of payments dated within 365d (457.0123 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
     },
     "risk_free_rate": {
       "source": "OECD long-term govt bond yield via FRED",
-      "retrieved_at": "2026-09-27T13:59:01.123495+00:00",
+      "retrieved_at": "2026-09-27T13:55:13.382012+00:00",
       "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
       "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
     },
     "cost_of_equity": [
       {
         "source": "OECD long-term govt bond yield via FRED",
-        "retrieved_at": "2026-09-27T13:59:01.003347+00:00",
+        "retrieved_at": "2026-09-27T13:55:13.298947+00:00",
         "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
       },
       {
         "source": "Damodaran country risk premium (Western Europe)",
-        "retrieved_at": "2026-09-27T13:59:01.003347+00:00",
+        "retrieved_at": "2026-09-27T13:55:13.298947+00:00",
         "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "url": "https://pages.stern.nyu.edu/~adamodar/"
       },
       {
         "source": "CAPM",
-        "retrieved_at": "2026-09-27T13:59:01.003347+00:00",
-        "derivation": "ke = 4.99% + 1.23 x 4.31% = 10.27%"
-      },
-      {
-        "source": "OLS beta: RIO.L vs ^FTSE weekly returns, 1y",
-        "retrieved_at": "2026-09-27T13:59:00.880300+00:00",
-        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = 1.34 over 52 weekly observations (Yahoo feed beta unavailable)"
+        "retrieved_at": "2026-09-27T13:55:13.298947+00:00",
+        "derivation": "ke = 4.99% + 0.77 x 4.31% = 8.33%"
       },
       {
         "source": "Blume (1971) beta adjustment + 0.40 beta floor",
-        "retrieved_at": "2026-09-27T13:59:00.890122+00:00",
-        "derivation": "beta raw 1.34 -> adjusted 1.23 (0.67*raw + 0.33)"
+        "retrieved_at": "2026-09-27T13:55:13.211866+00:00",
+        "derivation": "beta raw 0.66 -> adjusted 0.77 (0.67*raw + 0.33)"
       }
     ],
     "peer_multiples": [
@@ -174,7 +169,7 @@
       "EV/EBITDA leg: median 12.1x x EBITDA 17,334m - net debt 10,925m = equity 198,384m / 1,255m shares = 158.12"
     ],
     "blend": [
-      "blend: ddm 69.78 x 67%",
+      "blend: ddm 97.80 x 67%",
       "blend: comps_ev_ebitda 158.12 x 33%"
     ],
     "model_choices": {
@@ -206,31 +201,11 @@
       "status": "ok",
       "n": 1,
       "elapsed_s": 0.25
-    },
-    {
-      "ts": "2026-09-27T13:58:59.802662+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "RIO.L"
-      ],
-      "status": "ok",
-      "currency": "USD",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:59:00.016498+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "RIO.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.21
     }
   ],
   "benchmark": "^FTSE",
   "review_period_months": 3,
-  "review_due_at": "2026-09-27T13:59:01.135210+00:00",
+  "review_due_at": "2026-09-27T13:55:13.387094+00:00",
   "addenda": [],
-  "publication_audit_id": "2026-09-27T13:59:01.135210+00:00"
+  "publication_audit_id": "2026-09-27T13:55:13.387094+00:00"
 }

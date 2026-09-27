@@ -86,17 +86,51 @@ def build_note(ticker: str) -> dict:
     import math
     import statistics
 
-    beta_raw = fin.beta
+    # Beta methodology (in priority order, all disclosed):
+    #   1. OLS regression vs the benchmark we actually track (^FTSE), 52 weekly
+    #      obs -- per-name by construction. Yahoo's feed beta for .L names is
+    #      computed against the S&P 500 (AZN feed 0.20 vs measured-vs-FTSE
+    #      ~1.45), the wrong benchmark for a FTSE 100 tracker.
+    #   2. Feed beta (fallback, basis undisclosed by the vendor).
+    #   3. Peer-median (last resort; collapsed to one shared number historically).
+    beta_raw = None
     beta_fallback_prov = None
-    if beta_raw is None:
+    from . import data as _data
+
+    beta_raw, beta_reg_prov = _data.regression_beta(ticker)
+    if beta_raw is not None:
+        beta_fallback_prov = beta_reg_prov
+    elif fin.beta is not None:
+        beta_raw = fin.beta
+        beta_fallback_prov = {
+            "source": "Yahoo feed beta (fallback)",
+            "retrieved_at": _now_utc(),
+            "derivation": (
+                f"regression vs ^FTSE unavailable ({beta_reg_prov.get('derivation') or 'no data'}); "
+                f"using vendor beta {fin.beta:.2f} -- benchmark basis undisclosed"
+            ),
+        }
+    else:
         pb = [p.beta for p in peers_fin if p.beta is not None]
         if pb:
             beta_raw = statistics.median(pb)
             beta_fallback_prov = {
                 "source": "Peer-median beta fallback",
                 "retrieved_at": _now_utc(),
-                "derivation": f"subject beta unavailable on feed; raw beta "
-                              f"{beta_raw:.2f} = median of peers {[p.ticker for p in peers_fin if p.beta is not None]}",
+                "derivation": (
+                    f"regression failed ({beta_reg_prov.get('derivation') or 'no data'}) "
+                    f"and feed beta missing; raw beta {beta_raw:.2f} = median of peers "
+                    f"{[p.ticker for p in peers_fin if p.beta is not None]}"
+                ),
+            }
+        else:
+            beta_fallback_prov = {
+                "source": "Beta unavailable",
+                "retrieved_at": _now_utc(),
+                "derivation": (
+                    "regression failed, feed beta missing, no peer betas; "
+                    "cost of equity unavailable this cycle"
+                ),
             }
     beta = None
     blume_prov = None

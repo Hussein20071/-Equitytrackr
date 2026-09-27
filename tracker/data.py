@@ -295,3 +295,66 @@ def load_snapshot() -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
+
+
+def regression_beta(ticker: str, benchmark: str = "^FTSE",
+                    period: str = "1y", min_weeks: int = 26) -> tuple[float | None, dict]:
+    """Per-name OLS beta: covariance of weekly returns with the benchmark.
+
+    Yahoo's ``info`` beta is frequently absent for LSE names, which made the
+    peer-median fallback collapse to one shared number across the whole
+    universe. A regression against the actual benchmark is per-name by
+    construction and uses only real price history. Returns (beta, provenance);
+    beta is None when the overlap is too short to be honest about.
+    """
+    fail = {
+        "source": f"OLS beta vs {benchmark} ({period}, weekly)",
+        "retrieved_at": _now_utc(),
+        "derivation": "unavailable",
+    }
+    try:
+        hist = fetch_history([ticker], period=period)
+        bench = fetch_history([benchmark], period=period)
+    except Exception as exc:  # noqa: BLE001
+        fail["derivation"] = f"history fetch failed: {exc}"
+        _audit("regression_beta", [ticker, benchmark], "error", {"error": str(exc)})
+        return None, fail
+    if hist.empty or bench.empty:
+        fail["derivation"] = "empty price history"
+        _audit("regression_beta", [ticker, benchmark], "empty", {})
+        return None, fail
+
+    s = (hist.assign(Date=pd.to_datetime(hist["Date"]))
+         .set_index("Date")["Close_gbp"].astype(float)
+         .resample("W-FRI").last().dropna())
+    b = (bench.assign(Date=pd.to_datetime(bench["Date"]))
+         .set_index("Date")["Close_gbp"].astype(float)
+         .resample("W-FRI").last().dropna())
+    joined = pd.concat([s.rename("stock"), b.rename("bench")],
+                       axis=1, join="inner").dropna()
+    if len(joined) < min_weeks + 1:
+        fail["derivation"] = (f"only {len(joined)} overlapping weekly closes; "
+                              f"need >= {min_weeks + 1}")
+        _audit("regression_beta", [ticker, benchmark], "insufficient", {
+            "weeks": len(joined)})
+        return None, fail
+
+    rs = joined["stock"].pct_change().dropna()
+    rb = joined["bench"].pct_change().dropna()
+    var_b = float(rb.var(ddof=0))
+    if var_b <= 0:
+        fail["derivation"] = "zero benchmark variance in window"
+        return None, fail
+    beta = round(float(rs.cov(rb) / var_b), 4)
+    prov = {
+        "source": f"OLS beta: {ticker} vs {benchmark} weekly returns, {period}",
+        "retrieved_at": _now_utc(),
+        "derivation": (
+            f"beta = cov(r_stock, r_bench) / var(r_bench) = {beta:.2f} over "
+            f"{len(rs)} weekly observations -- measured against the benchmark "
+            f"the portfolio tracks ({benchmark}), per-name"
+        ),
+    }
+    _audit("regression_beta", [ticker, benchmark], "ok", {
+        "beta": beta, "weeks": len(rs), "period": period})
+    return beta, prov

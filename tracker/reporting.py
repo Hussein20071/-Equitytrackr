@@ -14,7 +14,7 @@ import re
 import shutil
 from pathlib import Path
 
-from . import audit, config
+from . import audit, config, scenario
 
 DASH_FILE = Path(config.DASHBOARD_PATH)
 NOTES_HTML_DIR = Path(config.NOTES_DIR) / "html"
@@ -150,8 +150,9 @@ def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict,
         q = (quotes or {}).get(r["ticker"]) or {}
         day_chg = ((q.get("price_gbp") / q.get("prev_close_gbp") - 1) * 100
                    if (q.get("price_gbp") and q.get("prev_close_gbp")) else None)
+        hot = " class=\"hot\"" if (day_chg is not None and abs(day_chg) >= 2.0) else ""
         out.append(
-            "<tr>"
+            f"<tr{hot}>"
             f'<td><a href="#note-{slug}"><strong>{_esc(r["ticker"])}</strong></a></td>'
             f"<td>{_fmt_pct(day_chg)}</td>"
             f"<td>{_esc(r['thesis_date'])}</td>"
@@ -165,6 +166,119 @@ def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict,
             "</tr>"
         )
     return "".join(out)
+
+
+def _kpi_color(v) -> str:
+    """Shared pos/neg/zero class so raw cells colour-match _fmt_pct spans."""
+    try:
+        x = float(v)
+    except (TypeError, ValueError):
+        return "zero"
+    return "pos" if x > 0 else ("neg" if x < 0 else "zero")
+
+
+def _movers_strip(qrows: list[dict]) -> str:
+    """At-a-glance day movers: one chip per ticker, coloured by sign."""
+    chips = []
+    for r in qrows:
+        m = re.search(r"([+-][\d.]+)%", r.get("chg_html") or "")
+        if not m:
+            continue
+        pct = float(m.group(1))
+        cls = "up" if pct > 0 else ("down" if pct < 0 else "flat")
+        arrow = "▲" if pct > 0 else ("▼" if pct < 0 else "•")
+        chips.append(
+            f'<span class="mover {cls}"><b>{_esc(r["ticker"]).replace(".L", "")}</b> '
+            f'{arrow} {pct:+.2f}%</span>'
+        )
+    if not chips:
+        return ""
+    return '<div class="movers"><span class="movers-label">Day movers</span>' \
+        + "".join(chips) + "</div>"
+
+
+def _change_line(changes: dict | None) -> str:
+    """One honest line: what actually changed in the latest refresh cycle."""
+    if not changes:
+        return ('<div class="muted" style="margin:4px 0 0;font-size:12.5px">'
+                "First refresh this session — cycle-over-cycle change tracking "
+                "starts with the next refresh.</div>")
+    movers = changes.get("movers") or []
+    if not movers:
+        return ('<div class="muted" style="margin:4px 0 0;font-size:12.5px">'
+                "Latest refresh: every quote within 0.05% of the previous "
+                "cycle — no meaningful moves.</div>")
+    return ('<div class="muted" style="margin:4px 0 0;font-size:12.5px">'
+            "Since the previous refresh: " + _esc(" · ".join(movers)) + "</div>")
+
+
+def _status_chip(meta: dict | None) -> str:
+    """Self-monitoring chip: green when the pipeline is flowing, amber when
+    data is older than an hour, red after 24h. Honest failure display."""
+    try:
+        from datetime import datetime, timezone
+        ts = (meta or {}).get("refreshed_at")
+        age_h = (datetime.now(timezone.utc)
+                 - datetime.fromisoformat(ts)).total_seconds() / 3600 if ts else None
+    except Exception:
+        age_h = None
+    if age_h is None:
+        cls, label = "red", "no data"
+    elif age_h > 24:
+        cls, label = "red", f"stale {age_h:.0f}h — pipeline stopped?"
+    elif age_h > 1:
+        cls, label = "amber", f"last refresh {age_h:.1f}h ago"
+    else:
+        label = f"live · refreshed {age_h * 60:.0f} min ago"
+        cls = "green"
+    return (f'<span class="chip"><span class="status-dot {cls}"></span> {_esc(label)}</span>')
+
+
+def _scenario_grid_html(grid: list[dict], pub_px) -> str:
+    """Reader what-if table: published target anchored at 0.0pp."""
+    if not grid:
+        return ""
+    rows = []
+    for r in grid:
+        t = r.get("target")
+        pct = (f'{(t / pub_px - 1) * 100:+.1f}%' if (t and pub_px) else "–")
+        anchor = " <span class='muted'>(published)</span>" if r.get("published") else ""
+        tcls = _kpi_color((t / pub_px - 1) * 100 if (t and pub_px) else None)
+        rows.append(
+            f"<tr><td>{r['shock'] * 100:+.1f}pp</td>"
+            f"<td>{_fmt_num(t)}{anchor}</td>"
+            f"<td class=\"{tcls}\">{pct}</td></tr>"
+        )
+    return (
+        "<table><tr><th>Rate shock</th><th>Implied target (GBP)</th>"
+        f"<th>vs price now</th></tr>{''.join(rows)}</table>"
+    )
+
+
+def _scenario_matrix_html(notes: list[dict]) -> str:
+    """One row per note: published target plus the ±0.5/±1/±2pp scenarios."""
+    shocks = [-0.02, -0.01, -0.005, 0.005, 0.01, 0.02]
+    rows = []
+    for n in notes:
+        grid = scenario.scenario_grid(n)
+        if not grid:
+            continue
+        by_shock = {r["shock"]: r.get("target") for r in grid}
+        pub = n.get("price_target_gbp")
+        slug = _note_filename(n["ticker"]).replace(".html", "")
+        cells = "".join(
+            f"<td>{_fmt_num(by_shock.get(s))}</td>" for s in shocks
+        )
+        rows.append(
+            f'<tr><td><a href="#note-{slug}"><strong>{_esc(n["ticker"])}</strong></a></td>'
+            f"<td><strong>{_fmt_num(pub)}</strong></td>{cells}</tr>"
+        )
+    if not rows:
+        return "<p class='muted'>No published notes with usable valuation legs.</p>"
+    head = "<tr><th>Ticker</th><th>Published target</th>" + "".join(
+        f"<th>{s * 100:+.1f}pp</th>" for s in shocks
+    ) + "</tr>"
+    return f"<table>{head}{''.join(rows)}</table>"
 
 
 def _kpi_cards(summary: dict) -> str:
@@ -296,7 +410,9 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
                     perf_by_ticker: dict | None = None,
                     monthly_by_ticker: dict | None = None,
                     series_by_ticker: dict | None = None,
-                    caption: str = "") -> None:
+                    caption: str = "",
+                    changes: dict | None = None,
+                    status_meta: dict | None = None) -> None:
     """Render index.html (the dashboard) from current data."""
     DASH_FILE.parent.mkdir(parents=True, exist_ok=True)
 
@@ -357,6 +473,17 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   .kpi-good {{ border-top:3px solid #10b981; }}
   .kpi-warn {{ border-top:3px solid #f59e0b; }}
   .kpi-neutral {{ border-top:3px solid #64748b; }}
+  .movers {{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; margin:10px 0 2px; }}
+  .movers-label {{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#51617a; margin-right:4px; }}
+  .mover {{ background:#fff; border:1px solid var(--line); border-radius:999px; padding:3px 10px; font-size:12.5px; box-shadow:0 1px 2px rgba(15,23,42,0.05); }}
+  .mover.up {{ color:var(--pos); }}
+  .mover.down {{ color:var(--neg); }}
+  .mover.flat {{ color:#5b6b83; }}
+  .status-dot {{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; vertical-align:middle; }}
+  .status-dot.green {{ background:#10b981; }}
+  .status-dot.amber {{ background:#f59e0b; }}
+  .status-dot.red {{ background:#ef4444; }}
+  tr.hot td {{ background:#fffbeb; }}
   .notecards {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; }}
   .notecard {{ background:#fff; border:1px solid var(--line); border-left:5px solid #64748b; border-radius:12px; padding:14px 16px; box-shadow:0 1px 3px rgba(15,23,42,0.07); }}
   .nc-head {{ display:flex; align-items:center; gap:9px; }}
@@ -400,7 +527,11 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   </div>
 </div>
 <main>
+  {_status_chip(status_meta)}
   <div class="caption"><b>Track record:</b> {_esc(caption)}</div>
+  {_movers_strip(qrows)}
+  {_change_line(changes)}
+  <div class="muted" style="margin:4px 0 0;font-size:12.5px"><b>Reading the numbers:</b> theses are dated 2026-09-21 and the 3-month tracked window is young — Return/Alpha accrue daily and are not yet a long-run record. Day moves are last close vs previous close.</div>
 
   <h2>Market snapshot — live LSE quotes</h2>
   <p class="muted">The London Stock Exchange quotes shares in <b>pence (GBp)</b>; this site expresses every price, target, and valuation in <b>GBP (£) = pence ÷ 100</b>. The QUOTED column shows the same live price in pence so you can cross-check directly against Yahoo or Google Finance.</p>
@@ -416,6 +547,13 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
 
   <h2>Research notes</h2>
   <div class="notecards">{cards_html}</div>
+
+  <div class="card">
+    <h2 style="margin-top:0">What if rates move? — scenarios re-derived from frozen inputs</h2>
+    <p class="muted">Each cell re-discounts that note's <b>frozen</b> cash-flow inputs at a shocked cost of equity (−2pp to +2pp), with weights renormalised over the surviving legs — same formulas as the published model, no new data, nothing fetched. The published target is the 0.0pp anchor and is never recomputed. Comps legs are multiple-based and rate-insensitive; notes valued purely on comps (e.g. NG) are correctly flat.</p>
+    {_scenario_matrix_html(notes)}
+    <div class="muted" style="margin-top:6px">Interactive per-note versions with a live slider are on each note page under “Your scenario”. These are <b>your</b> scenarios, not the published recommendation.</div>
+  </div>
 
   <div class="card">
     <h2 style="margin-top:0">Model portfolio vs FTSE 100 (indexed to 100, trailing 3 months)</h2>
@@ -498,9 +636,11 @@ function pollRefresh() {{
     .then(m => {{
       if (m && m.refreshed_at && !sameTs(m.refreshed_at, PAGE_TS) && m.refreshed_at !== toastShownFor) {{
         toastShownFor = m.refreshed_at;
+        const mv = (m.changes && m.changes.movers && m.changes.movers.length)
+          ? ' · ' + m.changes.movers.join(', ') : '';
         document.getElementById('toast-ts').textContent =
           'Loaded ' + String(PAGE_TS).replace('T', ' ').slice(0, 16) + ' UTC · latest is ' +
-          String(m.refreshed_at).replace('T', ' ').slice(0, 16) + ' UTC';
+          String(m.refreshed_at).replace('T', ' ').slice(0, 16) + ' UTC' + mv;
         updateToast.style.display = 'block';
       }}
     }})
@@ -511,7 +651,7 @@ pollRefresh();
 function armAutoReload() {{
   const secs = parseInt(liveSel.value, 10);
   try {{ localStorage.setItem('live_interval', liveSel.value); }} catch (e) {{}}
-  if (window.__liveTimer) clearInterval(window.__liveTimer);
+  if (window.__liveTimer) {{ clearInterval(window.__liveTimer); window.__liveTimer = null; }}
   if (secs > 0) window.__liveTimer = setInterval(() => location.reload(), secs * 1000);
 }}
 liveSel.addEventListener('change', armAutoReload);
@@ -527,6 +667,70 @@ document.getElementById('toast-close').addEventListener('click', () => {{ update
 </body>
 </html>"""
     DASH_FILE.write_text(doc, encoding="utf-8")
+
+def _scenario_widget_html(note: dict) -> str:
+    """Per-note scenario table + slider harness (slider JS wired below)."""
+    grid = scenario.scenario_grid(note)
+    if not grid:
+        return ""
+    px = (note.get("market_context") or {}).get("price_gbp_at_publication")
+    rows = []
+    for r in grid:
+        t = r.get("target")
+        pct = (f'{(t / px - 1) * 100:+.1f}%' if (t and px) else "–")
+        anchor = " <span class='muted'>(published)</span>" if r.get("published") else ""
+        tcls = _kpi_color((t / px - 1) * 100 if (t and px) else None)
+        rows.append(
+            f"<tr data-shock=\"{r['shock']:+.3f}\"><td>{r['shock'] * 100:+.1f}pp</td>"
+            f"<td class=\"sc-target\">{_fmt_num(t)}{anchor}</td>"
+            f"<td class=\"{tcls}\">{pct}</td></tr>"
+        )
+    return (
+        '<div class="scenario-box">'
+        '<h3>Your scenario — discount-rate shock (reader tool, not the published call)</h3>'
+        '<p class="muted">Slides re-discount the frozen cash flows at a different cost of equity. '
+        'Same formulas, same frozen inputs, no new data. The published target never changes.</p>'
+        '<input type="range" id="sc-slider" min="-2" max="2" step="0.1" value="0" style="width:60%"> '
+        '<span id="sc-readout" style="font-weight:700;color:var(--navy)">0.0pp → published target</span>'
+        '<table id="sc-table"><tr><th>Shock</th><th>Implied target (GBP)</th><th>vs price at publication</th></tr>'
+        + "".join(rows) + "</table></div>"
+    )
+
+
+def _data_quality_html(note: dict) -> str:
+    """Explicit, recruiter-visible disclosure of missing-source legs."""
+    v = note.get("valuation_inputs") or {}
+    dcf = v.get("dcf") or {}
+    ddm = v.get("ddm") or {}
+    comps = v.get("comps") or {}
+    issues = []
+    dcf_res = dcf.get("result") or {}
+    base = dcf.get("base_fcf_m")
+    if not dcf_res.get("value_per_share"):
+        reason = "n/a"
+        if base is None or base != base:
+            reason = "latest-FY free cash flow missing/NaN on the feed"
+        issues.append(
+            f"<li><b>DCF leg omitted:</b> {reason}. The blend re-weights over the "
+            "surviving legs — the published target is derived only from sources "
+            "that returned real numbers.</li>"
+        )
+    if not ddm.get("value_per_share"):
+        issues.append("<li><b>DDM leg omitted:</b> DPS/ROE/payout incomplete on the feed.</li>")
+    if not comps.get("implied_price_pe"):
+        issues.append("<li><b>P/E comps leg omitted:</b> peer median not robust or subject earnings depressed.</li>")
+    if not comps.get("implied_price_ev_ebitda"):
+        issues.append("<li><b>EV/EBITDA comps leg omitted:</b> peer median not robust or subject data gap.</li>")
+    if not issues:
+        return ""
+    return (
+        '<div class="dq-box"><h3>Data-quality disclosure (read before quoting this note)</h3>'
+        "<ul class='tight'>" + "".join(issues) + "</ul>"
+        '<p class="muted">Nothing is illustrated: where a source returns no valid '
+        'number, the affected leg is dropped and the omission is recorded here and in '
+        'the audit log, rather than the target being silently computed from bad data.</p></div>'
+    )
+
 
 def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
                     series: list[dict] | None = None) -> None:
@@ -686,6 +890,10 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
   .btn:hover {{ background:#eef2f8; }}
   .chartbox {{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; margin:14px 0; }}
   .chartbox canvas {{ max-height:260px; width:100%; }}
+  .scenario-box, .dq-box {{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px 16px; margin:14px 0; }}
+  .dq-box {{ border-left:4px solid #f59e0b; background:#fffbeb; }}
+  .scenario-box h3, .dq-box h3 {{ margin:0 0 6px; color:var(--navy); }}
+  #sc-table {{ margin-top:10px; }}
   ul {{ padding-left:20px; }}
   .disclaimer {{ color:#6b7a93; font-size:12px; border-top:1px solid #d7dee9; margin-top:30px; padding-top:12px; }}
   .muted {{ color:#6b7a93; font-size:12.5px; }}
@@ -723,6 +931,9 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
     <button class="btn" onclick="navigator.clipboard.writeText(location.href).then(()=>this.textContent='Link copied!').catch(()=>this.textContent='Copy failed')">Copy share link</button>
   </div>
 </div>
+
+{_scenario_widget_html(note)}
+{_data_quality_html(note)}
 
 <div class="chartbox">
   <h3 style="margin:2px 0 8px">Stock vs FTSE 100 since thesis (indexed to 100)</h3>
@@ -768,6 +979,34 @@ computed from live prices and statements. The full fetch trail is in
 <div class="disclaimer">{_esc(config.DISCLAIMER)}</div>
 </main>
 <script>{series_js}</script>
+<script>
+(() => {{
+  const slider = document.getElementById('sc-slider');
+  if (!slider) return;
+  const table = document.getElementById('sc-table');
+  const readout = document.getElementById('sc-readout');
+  const rows = Array.from(table.querySelectorAll('tr[data-shock]'));
+  const anchors = rows.map(r => ({{ shock: parseFloat(r.dataset.shock), targetEl: r.querySelector('.sc-target') }}));
+  const pubRow = anchors.find(a => Math.abs(a.shock) < 1e-9);
+  const pubText = pubRow ? pubRow.targetEl.textContent.trim() : null;
+  slider.addEventListener('input', () => {{
+    const v = parseFloat(slider.value);
+    const target = v === 0 ? (pubText ? 'published target' : '')
+      : (() => {{
+        const sorted = anchors.slice().sort((a, b) => a.shock - b.shock);
+        let lo = sorted[0], hi = sorted[sorted.length - 1];
+        for (let i = 0; i < sorted.length - 1; i++) {{
+          if (sorted[i].shock <= v && v <= sorted[i + 1].shock) {{ lo = sorted[i]; hi = sorted[i + 1]; break; }}
+        }}
+        const parse = s => parseFloat(String(s).replace(/[^0-9.\-]/g, ''));
+        const t0 = parse(lo.targetEl.textContent), t1 = parse(hi.targetEl.textContent);
+        const val = (hi.shock === lo.shock) ? t0 : t0 + (t1 - t0) * (v - lo.shock) / (hi.shock - lo.shock);
+        return val.toFixed(2) + ' GBP';
+      }})();
+    readout.textContent = (v > 0 ? '+' : '') + v.toFixed(1) + 'pp → ' + target;
+  }});
+}})();
+</script>
 </body>
 </html>"""
     out = NOTES_HTML_DIR / _note_filename(note["ticker"])
