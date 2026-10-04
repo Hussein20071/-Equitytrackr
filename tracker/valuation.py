@@ -300,6 +300,104 @@ def run_comps(subject, peers_fin: list, peers_px: dict[str, float]) -> CompsResu
 
 
 # ---------------------------------------------------------------------------
+# Model sanity: outlier guardrail + reverse DCF
+# ---------------------------------------------------------------------------
+
+OUTLIER_BAND = 0.30  # blended target more than +/-30% from price -> flag
+
+
+def outlier_check(target: float | None, price: float | None,
+                  legs: dict[str, float | None],
+                  weights: dict[str, float] | None) -> dict:
+    """Guardrail: is the blended target a model outlier vs the market price?
+
+    A note is flagged when |target/price - 1| > 30%. The flagged output
+    names the driver: the leg whose weighted contribution
+    (weight x (leg/price - 1)) explains the most of the gap. Purely
+    arithmetic on already-published numbers; nothing is refetched.
+    """
+    if not target or not price or price <= 0:
+        return {"is_outlier": False, "detail": "no target or price to check"}
+    dev = target / price - 1
+    contributions: dict[str, float] = {}
+    leg_devs: dict[str, float] = {}
+    for name, val in (legs or {}).items():
+        if val is None or val <= 0:
+            continue
+        leg_devs[name] = val / price - 1
+        w = (weights or {}).get(name) or 0.0
+        contributions[name] = w * (val / price - 1)
+    driver = (max(contributions, key=lambda k: abs(contributions[k]))
+              if contributions else None)
+    return {
+        "is_outlier": abs(dev) > OUTLIER_BAND,
+        "band_pct": round(OUTLIER_BAND * 100, 1),
+        "deviation_pct": round(dev * 100, 2),
+        "driver_leg": driver,
+        "driver_contribution_pct": (round(contributions[driver] * 100, 2)
+                                    if driver else None),
+        "leg_deviation_pct": {k: round(v * 100, 2)
+                              for k, v in leg_devs.items()},
+        "definition": (
+            "flagged when |target / price - 1| > 30%; driver = the leg with "
+            "the largest weighted contribution (weight x leg deviation) to the gap"
+        ),
+    }
+
+
+def reverse_dcf_growth(base_fcf_m: float, wacc: float, net_debt_m: float,
+                       shares_m: float, price: float,
+                       years: int = 5) -> dict:
+    """What growth does the CURRENT price imply? (reverse DCF)
+
+    Solves for the uniform FCF growth rate ``g`` — applied to years 1..N
+    and to the terminal value (a single-stage-in-perpetuity reading) — at
+    which the same DCF machinery values the shares exactly at today's
+    price. The DCF value is monotonically increasing in ``g`` (the
+    terminal value explodes as g -> wacc), so bisection is exact.
+    Uses the note's frozen base FCF/WACC/net debt/shares; nothing fetched.
+    """
+    if not (base_fcf_m and base_fcf_m > 0 and wacc and net_debt_m is not None
+            and shares_m and shares_m > 0 and price and price > 0):
+        return {"g_implied": None,
+                "detail": "reverse DCF unavailable: missing frozen inputs"}
+
+    def value_at(g: float) -> float:
+        fcf, pv = base_fcf_m, 0.0
+        for i in range(years):
+            fcf *= (1 + g)
+            pv += fcf / (1 + wacc) ** (i + 1)
+        tv = fcf * (1 + g) / (wacc - g) / (1 + wacc) ** years
+        return (pv + tv - net_debt_m) / shares_m
+
+    hi = wacc - 1e-4
+    if value_at(hi) <= price:
+        return {
+            "g_implied": None,
+            "g_bound": round(hi, 4),
+            "detail": (
+                f"the current price implies perpetual FCF growth at or above "
+                f"the WACC ({wacc:.2%}) -- no finite solution"
+            ),
+        }
+    lo = -0.10
+    for _ in range(80):
+        mid = (lo + hi) / 2
+        if value_at(mid) < price:
+            lo = mid
+        else:
+            hi = mid
+    g = round((lo + hi) / 2, 4)
+    return {
+        "g_implied": g,
+        "detail": (
+            f"at the frozen WACC ({wacc:.2%}), the current price implies "
+            f"{g:.1%} FCF growth in perpetuity (years 1-{years} and terminal)"
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Blending
 # ---------------------------------------------------------------------------
 

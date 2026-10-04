@@ -14,7 +14,7 @@ import re
 import shutil
 from pathlib import Path
 
-from . import audit, config, scenario
+from . import audit, config, portfolio, scenario, valuation
 
 DASH_FILE = Path(config.DASHBOARD_PATH)
 NOTES_HTML_DIR = Path(config.NOTES_DIR) / "html"
@@ -139,6 +139,123 @@ def _qtable(qrows: list[dict]) -> str:
             '<th>QUOTED (GBp)</th><th>DAY</th></tr>' + body)
 
 
+def _portfolio_weights_table(weights_table: dict) -> str:
+    """Explicit £100k holdings table: position £ and %, sector, price."""
+    if not weights_table:
+        return ""
+    rows = "".join(
+        f"<tr><td><strong>{_esc(r['ticker'])}</strong></td>"
+        f"<td>{_esc(r['name'])}</td>"
+        f"<td>{_esc(r['sector'])}</td>"
+        f"<td>{r['weight_pct']}%</td>"
+        f"<td>£{_fmt_num(r['position_gbp'])}</td>"
+        f"<td>{_fmt_num(r.get('price_gbp'))}</td>"
+        f"<td>{_fmt_num(r.get('approx_shares'), 0)}</td>"
+        f"<td>£{_fmt_num(r.get('buy_cost_gbp'))}</td></tr>"
+        for r in weights_table.get("rows", [])
+    )
+    return (
+        f"<table><tr><th>Ticker</th><th>Name</th><th>Sector</th><th>Weight</th>"
+        f"<th>Position (£100k notional)</th><th>Price (GBP)</th><th>~Shares</th>"
+        f"<th>One-off buy cost</th></tr>{rows}</table>"
+        f'<p class="muted">{_esc(weights_table.get("cost_assumption", ""))} '
+        f"Total one-off buy cost £{_fmt_num(weights_table.get('total_buy_cost_gbp'))} "
+        f"on £{_fmt_num(weights_table.get('notional_gbp'), 0)} notional. "
+        f"{_esc(weights_table.get('return_basis', ''))}</p>"
+    )
+
+
+def _sector_chart_html(sector_mix: dict, ftse_sectors: dict | None) -> str:
+    """Model portfolio sector mix vs FTSE 100 sector weights (side by side)."""
+    if not sector_mix:
+        return ""
+    fw = (ftse_sectors or {}).get("weights") or {}
+    as_of = (ftse_sectors or {}).get("as_of", "")[:10]
+    src = (ftse_sectors or {}).get("source", "")
+    sectors = sorted(set(list(sector_mix.keys()) + list(fw.keys())),
+                     key=lambda s: -sector_mix.get(s, 0))
+    rows = "".join(
+        f"<tr><td>{_esc(s)}</td>"
+        f"<td>{sector_mix.get(s, 0) * 100:.1f}%</td>"
+        + (f"<td>{fw[s] * 100:.1f}%</td>" if s in fw else "<td>–</td>")
+        + "</tr>"
+        for s in sectors
+    )
+    note_html = (
+        f'<p class="muted">FTSE 100 sector weights: {_esc(src)} '
+        f"(as of {as_of}). </p>" if fw else
+        '<p class="muted">FTSE 100 sector comparison omitted: the cached '
+        "constituent-sector file is missing or stale — refresh it with "
+        "<code>python -m tracker.cli sectors</code>. The portfolio mix is "
+        "shown alone rather than compared against an invented benchmark.</p>"
+    )
+    return (
+        '<table><tr><th>ICB supersector</th><th>Model portfolio</th>'
+        + ("<th>FTSE 100</th>" if fw else "") + "</tr>" + rows + "</table>"
+        + note_html
+    )
+
+
+def _portfolio_metrics_html(label: str, m: dict, curve: list[dict],
+                            rf_prov: str = "") -> str:
+    """Series-level risk metrics block, date-stamped and labelled."""
+    if not m or not curve:
+        return (f'<p class="muted">{label}: not yet computable — needs more '
+                "trading days in the window.</p>")
+    start, end = curve[0]["date"], curve[-1]["date"]
+    rows = [
+        ("Total return (net of costs)", f"{m['total_return_pct']:+.2f}%"),
+        ("FTSE 100 total return", f"{m['bench_total_return_pct']:+.2f}%"),
+        ("Annualised return (CAGR)", f"{m['ann_return_pct']:+.2f}%"),
+        ("Annualised volatility", f"{m['ann_vol_pct']:.2f}%"),
+        ("Max drawdown", f"{m['max_drawdown_pct']:.2f}%"),
+        ("Beta vs FTSE 100", _fmt_num(m.get("beta_vs_bench"))),
+        ("Tracking error (ann.)", f"{m.get('tracking_error_pct'):.2f}%"
+         if m.get("tracking_error_pct") is not None else "–"),
+        ("Sharpe ratio", _fmt_num(m.get("sharpe"))),
+    ]
+    body = "".join(
+        f"<tr><td>{_esc(k)}</td><td>{v}</td></tr>" for k, v in rows
+    )
+    rf_line = f" Risk-free: {_esc(rf_prov)}." if rf_prov else ""
+    return (
+        f"<h4>{_esc(label)} — {start} to {end} ({m['n_obs']} trading days, "
+        f"hypothetical £100k portfolio)</h4>"
+        f"<table>{body}</table>"
+        f'<p class="muted">Computed on the portfolio return series (not an '
+        "average of stock-level stats). Total-return basis (adjusted close, "
+        "dividends reinvested), net of the stated inception costs. Sharpe uses "
+        "the UK short rate."
+        f"{rf_line}</p>"
+    )
+
+
+def _about_html() -> str:
+    """About section: who, why, tools, limitations."""
+    return """
+<div class="card" id="about">
+  <h2 style="margin-top:0">About</h2>
+  <p><strong>Hussein Mohamed</strong> — King's College London student and aspiring
+  asset-management professional. I built this site to demonstrate the working
+  habits the buy side actually runs on: research notes with frozen, sourced
+  inputs; an append-only audit trail; a tracked record with honest dates; and
+  corrections that are dated addenda, never silent edits.</p>
+  <p><strong>Why built:</strong> a CV claim like "I follow UK equities" is not
+  verifiable; a site that shows every input, formula, fetch, and mistake is.
+  The notes are generated systematically from live public data — my contribution
+  is the methodology, the guardrails, and the discipline of publishing results
+  (good and bad) with their dates.</p>
+  <p><strong>Tools:</strong> Python (yfinance, pandas, pytest), FRED (gilt yields),
+  Damodaran (ERP), GitHub Actions (refresh + deploy every 5 minutes in market
+  hours), GitHub Pages.</p>
+  <p><strong>Known limitations:</strong> fundamentals come from Yahoo Finance and
+  may be delayed or restated; the universe is 8 large-caps, not the full FTSE 100;
+  the model portfolio is notional £100,000 with stated (not real) transaction
+  costs; ESG data is absent for some names and disclosed as such; the track record
+  is short and means nothing statistically yet. Nothing here is investment advice.</p>
+</div>"""
+
+
 def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict,
                     quotes: dict | None = None) -> str:
     if not perf_rows:
@@ -166,6 +283,126 @@ def _perf_rows_html(perf_rows: list[dict], series_by_ticker: dict,
             "</tr>"
         )
     return "".join(out)
+
+
+def _guardrail_banner(note: dict) -> str:
+    """Red banner when the blended target breaches the +/-30% guardrail."""
+    g = note.get("model_checks") or {}
+    if not g.get("is_outlier"):
+        return ""
+    driver = g.get("driver_leg") or "n/a"
+    contrib = g.get("driver_contribution_pct")
+    dev = g.get("deviation_pct")
+    leg_devs = g.get("leg_deviation_pct") or {}
+    legs_txt = " ".join(
+        f"{k} {v:+.0f}%" for k, v in leg_devs.items()
+    ) or "no legs"
+    return (
+        '<div class="guard-box"><b>Model outlier &mdash; under review.</b> '
+        f"The blended target is {dev:+.1f}% vs the market price, beyond the "
+        f"±30% guardrail. Driver: the <b>{_esc(driver)}</b> leg "
+        + (f"(weighted contribution {_esc(f'{contrib:+.0f}pp')} of the gap). " if contrib is not None else ". ")
+        + f"Leg deviations vs price: {_esc(legs_txt)}. "
+        "Read the note as a model-vs-market disagreement, not a trade "
+        "recommendation; see the reverse DCF for what the market price "
+        "implies instead.</div>"
+    )
+
+
+def _reverse_dcf_html(note: dict, current_price: float | None) -> str:
+    """Reverse DCF: what growth does the CURRENT price imply?"""
+    v = note.get("valuation_inputs") or {}
+    dcf = v.get("dcf") or {}
+    res = dcf.get("result") or {}
+    if not res.get("value_per_share"):
+        return ""
+    base = dcf.get("base_fcf_used_m") or dcf.get("base_fcf_m")
+    r = valuation.reverse_dcf_growth(
+        base, dcf.get("wacc"), dcf.get("net_debt_m"),
+        dcf.get("shares_m"), current_price or 0.0,
+    )
+    if r.get("g_implied") is None:
+        return (f'<p class="muted">Reverse DCF: {_esc(r.get("detail") or "unavailable")}.</p>')
+    g = r["g_implied"]
+    return (
+        f'<p><b>Reverse DCF:</b> at the frozen WACC ({dcf.get("wacc"):.2%}), '
+        f"the current price of GBP {_fmt_num(current_price)} implies "
+        f"<b>{g:.1%} FCF growth in perpetuity</b> (years 1-5 and terminal). "
+        f"Compare with the published growth path {_esc(dcf.get('fcf_growth_path'))}. "
+        f"<span class='muted'>{_esc(r['detail'])}</span></p>"
+    )
+
+
+def _sensitivity_grid_html(note: dict) -> str:
+    """5x5 DCF sensitivity: WACC rows x terminal growth columns."""
+    grid = scenario.sensitivity_grid(note)
+    if not grid:
+        return ""
+    tgs = grid["tg_steps"]
+    head = "<tr><th>WACC \\ g</th>" + "".join(
+        f"<th>{tg0 * 100:+.2f}pp</th>" for tg0 in tgs
+    ) + "</tr>"
+    rows = ""
+    for r in grid["rows"]:
+        cells = "".join(
+            f"<td>{_fmt_num(c)}</td>" if c is not None else "<td>–</td>"
+            for c in r["cells"]
+        )
+        rows += f"<tr><td><strong>{r['wacc']:.2%}</strong> ({r['wacc_shock'] * 100:+.1f}pp)</td>{cells}</tr>"
+    return (
+        '<div class="sens-box"><h3>DCF sensitivity: WACC × terminal growth '
+        "(5×5, frozen inputs, DCF leg only)</h3>"
+        f'<p class="muted">Each cell re-derives the DCF value per share (GBP) '
+        "from the frozen inputs at that WACC and terminal-growth offset; the "
+        "centre row/column pair at 0.0/0.0 is the published DCF leg.</p>"
+        f"<table>{head}{rows}</table></div>"
+    )
+
+
+def _bull_base_bear_html(note: dict) -> str:
+    """Bull / base / bear with a price and the key assumption each."""
+    cases = scenario.bull_base_bear(note)
+    if not cases:
+        return ""
+    cls = {"Bull": "pos", "Bear": "neg", "Base": "zero"}
+    rows = "".join(
+        f"<tr><td><strong class='{cls.get(c['case'], '')}'>{c['case']}</strong></td>"
+        f"<td>{_fmt_num(c.get('price'))}</td>"
+        f"<td>{_fmt_pct(c.get('upside_pct')) if c.get('upside_pct') is not None else '<span class=zero>–</span>'}</td>"
+        f"<td>{_esc(c['assumption'])}</td></tr>"
+        for c in cases
+    )
+    return (
+        '<h3>Bull / base / bear (same frozen inputs, one assumption moved)</h3>'
+        f"<table><tr><th>Case</th><th>Price (GBP)</th><th>vs pub. price</th>"
+        f"<th>Key assumption</th></tr>{rows}</table>"
+    )
+
+
+def _esg_html(note: dict) -> str:
+    """2-3 line ESG / stewardship note from the feed's risk scores."""
+    e = note.get("esg") or {}
+    tk = note.get("ticker", "")
+    if e.get("total_esg") is None:
+        return (
+            '<h3>ESG / stewardship</h3>'
+            '<p class="muted">No ESG risk score available on the data feed for '
+            f"{_esc(tk)} — omitted rather than estimated. Valuation impact: "
+            "none modelled; any ESG-driven cash-flow or discount-rate effect "
+            "is outside the frozen inputs.</p>"
+        )
+    t, env, soc, gov = (e.get("total_esg"), e.get("environment"),
+                        e.get("social"), e.get("governance"))
+    return (
+        '<h3>ESG / stewardship</h3>'
+        f"<p><b>Sustainalytics ESG risk score {t:.1f}</b> (lower = less risk; "
+        f"environment {env:.1f} / social {soc:.1f} / governance {gov:.1f}). "
+        "The score is a risk read, not a valuation input: it is disclosed so a "
+        "reader can judge whether unmodelled ESG risk justifies a wider or "
+        "narrower discount to the published target. No stewardship activity is "
+        "claimed — this is a personal educational project with no assets under "
+        "management.</p>"
+    )
 
 
 def _kpi_color(v) -> str:
@@ -288,13 +525,13 @@ def _kpi_cards(summary: dict) -> str:
     dir_acc = summary.get("directional_accuracy_pct", 0)
     cards = [
         ("NOTES TRACKED", summary["n"], "published & frozen", "kpi-neutral"),
-        ("HIT RATE", f"{hit}%", "alpha > 0 vs FTSE", "kpi-good" if hit >= 50 else "kpi-warn"),
+        ("HIT RATE", f"{hit}%", "notes beating FTSE (alpha > 0)", "kpi-good" if hit >= 50 else "kpi-warn"),
         ("DIRECTIONAL ACC", f"{dir_acc}%", "calls that moved the right way", "kpi-good" if dir_acc >= 50 else "kpi-warn"),
-        ("AVG ALPHA", f"{summary.get('avg_alpha_pct', 0):+.2f}%", "vs FTSE 100", "kpi-good" if summary.get("avg_alpha_pct", 0) > 0 else "kpi-warn"),
-        ("AVG RETURN", f"{summary.get('avg_return_pct', 0):+.2f}%", "since thesis dates", "kpi-neutral"),
-        ("WORST DRAWDOWN", _fmt_pct(summary.get("worst_drawdown_pct")).replace('<span class="neg">', "").replace('<span class="zero">', "").replace("</span>", ""), "peak-to-trough", "kpi-warn"),
-        ("AVG ANN. VOL", f"{_fmt_num(summary.get('avg_ann_vol_pct'), 1)}%", "of tracked names", "kpi-neutral"),
-        ("TRADING DAYS", summary.get("total_trading_days", 0), "of evidence", "kpi-neutral"),
+        ("AVG ALPHA", f"{summary.get('avg_alpha_pct', 0):+.2f}%", "vs FTSE 100, per note", "kpi-good" if summary.get("avg_alpha_pct", 0) > 0 else "kpi-warn"),
+        ("AVG RETURN", f"{summary.get('avg_return_pct', 0):+.2f}%", "since first publication", "kpi-neutral"),
+        ("WORST DRAWDOWN", _fmt_pct(summary.get("worst_drawdown_pct")).replace('<span class="neg">', "").replace('<span class="zero">', "").replace("</span>", ""), "peak-to-trough, worst note", "kpi-warn"),
+        ("AVG ANN. VOL", f"{_fmt_num(summary.get('avg_ann_vol_pct'), 1)}%", "per-note average", "kpi-neutral"),
+        ("NOTE-DAYS", summary.get("total_trading_days", 0), "sum of per-note trading days", "kpi-neutral"),
     ]
     return "".join(
         f'<div class="kpi {cls}"><div class="v">{v}</div>'
@@ -323,9 +560,16 @@ def _note_card(note: dict, perf: dict | None, monthly: list[dict],
     def li(items):
         return "".join(f"<li>{_esc(i)}</li>" for i in items)
 
+    ctx = note.get("market_context") or {}
+    pub_px = ctx.get("price_gbp_at_publication")
+    first_px = ctx.get("price_gbp_at_first_publication") or pub_px
+    guard = note.get("model_checks") or {}
+
     inputs_rows = [
-        ("Base FCF (latest FY)", _fmt_num(dcf.get("base_fcf_m"), 1) + " GBPm",
-         "Yahoo cash_flow: OCF − capex, FX→GBP"),
+        ("Base FCF (used)", _fmt_num(dcf.get("base_fcf_used_m") or dcf.get("base_fcf_m"), 1) + " GBPm",
+         dcf.get("base_fcf_source") or "Yahoo cash_flow: OCF − capex, FX→GBP"),
+        ("Base FCF (latest FY as reported)", _fmt_num(dcf.get("base_fcf_m"), 1) + " GBPm",
+         "as on the feed (NaN = missing)"),
         ("FCF growth path", _esc(dcf.get("fcf_growth_path")),
          (dcf.get("derivation") or [""])[0]),
         ("Terminal growth", _esc(dcf.get("terminal_growth")),
@@ -370,6 +614,26 @@ def _note_card(note: dict, perf: dict | None, monthly: list[dict],
         )
         addenda_html = f"<h4>Addenda (dated, never edited)</h4><ul class='tight'>{rows}</ul>"
 
+    wrong_if = thesis.get("wrong_if") or []
+    wrong_if_html = (""
+        if not wrong_if else
+        "<h4>What would make me wrong</h4><ul class='tight'>" + li(wrong_if) + "</ul>")
+    esg_html = _esg_html(note)
+    bbb_html = _bull_base_bear_html(note)
+    sens_html = _sensitivity_grid_html(note)
+    guard_banner = _guardrail_banner(note)
+    current_price = (perf or {}).get("last_price")
+
+    price_cells = (
+        f"<div><span class='l'>Price at publication</span><span class='v'>{_fmt_num(pub_px)}</span></div>"
+        f"<div><span class='l'>Current price</span><span class='v'>{_fmt_num(current_price)}</span></div>"
+    )
+    if first_px != pub_px:
+        price_cells += (
+            f"<div><span class='l'>Price at 1st publication</span>"
+            f"<span class='v'>{_fmt_num(first_px)}</span></div>"
+        )
+
     return f"""
 <article class="notecard" id="note-{slug}" style="border-left-color:{st['border']}">
   <header>
@@ -380,9 +644,11 @@ def _note_card(note: dict, perf: dict | None, monthly: list[dict],
     </div>
     <div class="nc-headline">{_esc(_round_raw_floats(note.get('headline') or ''))}</div>
   </header>
+  {guard_banner}
   <div class="nc-stats">
     <div><span class="l">Target</span><span class="v">{_fmt_num(note.get('price_target_gbp'))}</span></div>
     <div><span class="l">Upside</span><span class="v">{upside_html}</span></div>
+    {price_cells}
     <div><span class="l">Alpha so far</span><span class="v">{alpha_html}</span></div>
     <div><span class="l">Window</span>{progress}</div>
     <div class="nc-spark"><span class="l">Since thesis</span>{spark}</div>
@@ -390,10 +656,14 @@ def _note_card(note: dict, perf: dict | None, monthly: list[dict],
   <details>
     <summary>Full note — thesis, frozen inputs, provenance</summary>
     <p>{_esc(_round_raw_floats(thesis.get('summary') or ''))}</p>
+    {bbb_html}
     <div class="cols2">
       <div><h4>Catalysts</h4><ul class="tight">{li(thesis.get('catalysts', []))}</ul></div>
       <div><h4>Risks</h4><ul class="tight">{li(thesis.get('risks', []))}</ul></div>
     </div>
+    {wrong_if_html}
+    {esg_html}
+    {sens_html}
     <h4>Valuation inputs (frozen at publication)</h4>
     <table><tr><th>Input</th><th>Value</th><th>Derivation / source</th></tr>{inputs_html}</table>
     {monthly_html}
@@ -412,7 +682,13 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
                     series_by_ticker: dict | None = None,
                     caption: str = "",
                     changes: dict | None = None,
-                    status_meta: dict | None = None) -> None:
+                    status_meta: dict | None = None,
+                    backtest_curve: list[dict] | None = None,
+                    live_metrics: dict | None = None,
+                    backtest_metrics: dict | None = None,
+                    weights_table: dict | None = None,
+                    sector_mix: dict | None = None,
+                    ftse_sectors: dict | None = None) -> None:
     """Render index.html (the dashboard) from current data."""
     DASH_FILE.parent.mkdir(parents=True, exist_ok=True)
 
@@ -420,8 +696,14 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
     perf_by_ticker = perf_by_ticker or {}
     monthly_by_ticker = monthly_by_ticker or {}
     series_by_ticker = series_by_ticker or {}
+    backtest_curve = backtest_curve or []
+    live_metrics = live_metrics or {}
+    backtest_metrics = backtest_metrics or {}
+    weights_table = weights_table or {}
+    sector_mix = sector_mix or {}
     qrows = _qrows(quotes)
     n_curve = len(curve or [])
+    n_backtest = len(backtest_curve)
     cards_html = "".join(
         _note_card(n, perf_by_ticker.get(n["ticker"]),
                    monthly_by_ticker.get(n["ticker"]) or [],
@@ -431,6 +713,11 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
     curve_data_js = (
         "[" + ",".join(
             f'["{c["date"]}",{c["portfolio"]},{c["benchmark"]}]' for c in (curve or [])
+        ) + "]"
+    )
+    bt_data_js = (
+        "[" + ",".join(
+            f'["{c["date"]}",{c["portfolio"]},{c["benchmark"]}]' for c in backtest_curve
         ) + "]"
     )
     audit_rows_html = _audit_rows_table(audit.tail(300))
@@ -504,7 +791,29 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   ul.tight {{ margin:4px 0; padding-left:18px; }}
   ul.tight li {{ margin:2px 0; font-size:13.5px; }}
   .cols2 {{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }}
-  @media (max-width:640px) {{ .cols2 {{ grid-template-columns:1fr; }} }}
+  .topnav {{ position:sticky; top:0; z-index:40; background:#0f3460ee; backdrop-filter:blur(4px); }}
+  .topnav-inner {{ max-width:1180px; margin:0 auto; padding:0 20px; display:flex; gap:2px; flex-wrap:wrap; }}
+  .topnav a {{ color:#dbe6f7; font-size:13px; padding:9px 12px; display:inline-block; font-weight:600; }}
+  .topnav a:hover {{ background:#ffffff22; text-decoration:none; color:#fff; }}
+  .guard-box {{ background:#fef2f2; border:1px solid #fecaca; border-left:5px solid #ef4444; border-radius:10px; padding:10px 14px; margin:8px 0; font-size:13.5px; color:#7f1d1d; }}
+  .sens-box {{ background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:8px 0; }}
+  .sens-box table {{ font-size:12px; }}
+  .metric-def {{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin:10px 0; font-size:12.5px; color:#44526b; }}
+  .metric-def b {{ color:var(--navy); }}
+  .honesty-split {{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }}
+  @media (max-width:900px) {{
+    .honesty-split {{ grid-template-columns:1fr; }}
+    .hero h1 {{ font-size:24px; }}
+    .topnav-inner {{ padding:0 8px; }}
+    .topnav a {{ padding:8px 9px; font-size:12px; }}
+  }}
+  @media (max-width:640px) {{
+    .cols2 {{ grid-template-columns:1fr; }}
+    main {{ padding:14px 12px 30px; }}
+    th, td {{ padding:7px 8px; font-size:12.5px; }}
+    .table-wrap {{ overflow-x:auto; }}
+    .table-wrap table {{ min-width:640px; }}
+  }}
   details table {{ font-size:12.5px; margin:6px 0; }}
   canvas {{ max-height:300px; }}
   a {{ color:var(--navy); text-decoration:none; }}
@@ -526,26 +835,74 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
     </div>
   </div>
 </div>
-<main>
+<nav class="topnav no-print"><div class="topnav-inner">
+  <a href="#top">Overview</a>
+  <a href="#portfolio">Portfolio</a>
+  <a href="#notes">Notes</a>
+  <a href="#methodology">Methodology</a>
+  <a href="#audit-trail">Audit</a>
+  <a href="#about">About</a>
+  <a href="audit.html">Audit viewer</a>
+</div></nav>
+<main id="top">
   {_status_chip(status_meta)}
   <div class="caption"><b>Track record:</b> {_esc(caption)}</div>
   {_movers_strip(qrows)}
   {_change_line(changes)}
-  <div class="muted" style="margin:4px 0 0;font-size:12.5px"><b>Reading the numbers:</b> theses are dated 2026-09-21 and the 3-month tracked window is young — Return/Alpha accrue daily and are not yet a long-run record. Day moves are last close vs previous close.</div>
+  <div class="metric-def">
+    <b>Reading the numbers — definitions used everywhere on this site:</b><br>
+    <b>Hit rate</b> = share of tracked notes beating the FTSE 100 (alpha &gt; 0) since each note's first publication.<br>
+    <b>Directional accuracy</b> = share of calls where price moved the way the recommendation said (BUY up / SELL down / HOLD within ±10%) over the same window — direction only, regardless of size.<br>
+    <b>Alpha</b> = note return − FTSE 100 return over the same dated window. <b>Day</b> = last close vs previous close.
+  </div>
 
   <h2>Market snapshot — live LSE quotes</h2>
   <p class="muted">The London Stock Exchange quotes shares in <b>pence (GBp)</b>; this site expresses every price, target, and valuation in <b>GBP (£) = pence ÷ 100</b>. The QUOTED column shows the same live price in pence so you can cross-check directly against Yahoo or Google Finance.</p>
   <table>{_qtable(qrows)}</table>
 
-  <h2>Track record vs FTSE 100 — 3-month window per thesis</h2>
-  <div class="kpis">{_kpi_cards(summary)}</div>
-  <table>
-    <tr><th>Ticker</th><th>Day</th><th>Thesis date</th><th>Price path</th><th>Chart</th><th>Return since thesis</th><th>Alpha since thesis</th><th>Ann. vol</th><th>Max DD</th><th>Rec</th></tr>
-    {_perf_rows_html(perf_rows, series_by_ticker, quotes)}
-  </table>
-  <div class="muted" style="margin-top:6px"><b>Day</b> = last close vs previous close — the same number Yahoo Finance shows. <b>Return</b> and <b>Alpha</b> measure performance since the thesis date (a multi-day track record), not today's move. Vol = annualised volatility of daily returns · Max DD = maximum drawdown over the tracked window · click a ticker to jump to its note, expand the card for full inputs.</div>
+  <h2 id="track-record">Track record — live vs backtest, clearly separated</h2>
+  <div class="honesty-split">
+    <div class="card" style="margin:0">
+      <h3 style="margin-top:0;color:var(--pos)">Live record — since first publication ({summary.get('window_start') or 'n/a'} onward)</h3>
+      <p class="muted">Real decisions, published before the fact: each note's window starts at its first-publication close and runs to {summary.get('window_end') or 'n/a'}. Notes are frozen at publication; corrections are dated addenda. This is the only section that counts as a track record.</p>
+      <div class="kpis">{_kpi_cards(summary)}</div>
+      <table>
+        <tr><th>Ticker</th><th>Day</th><th>Thesis date</th><th>Price path</th><th>Chart</th><th>Return since thesis</th><th>Alpha since thesis</th><th>Ann. vol</th><th>Max DD</th><th>Rec</th></tr>
+        {_perf_rows_html(perf_rows, series_by_ticker, quotes)}
+      </table>
+      <div class="muted" style="margin-top:6px">Every figure above runs {summary.get('window_start') or 'n/a'} → {summary.get('window_end') or 'n/a'} (per-note start dates in the Thesis date column; windows are per-note, the KPI header shows the full span). {summary.get('total_trading_days', 0)} note-days of evidence in total (sum of per-note trading days — not calendar days, and not the portfolio window length).</div>
+    </div>
+    <div class="card" style="margin:0">
+      <h3 style="margin-top:0;color:#b45309">Backtest — HYPOTHETICAL (current weights applied to trailing history)</h3>
+      <p class="muted">The current model portfolio, back-run over the trailing 3 months with today's weights. <b>Hypothetical:</b> the notes did not all exist at the start of this window and the weights were chosen with hindsight; it is a model-behaviour illustration, not a track record.</p>
+      <div class="muted">{n_backtest} trading days plotted (trailing 3-month window, cost-adjusted).</div>
+      <canvas id="btcurve" width="520" height="240"></canvas>
+    </div>
+  </div>
 
-  <h2>Research notes</h2>
+  <h2 id="portfolio">Portfolio construction — notional £100,000</h2>
+  <div class="card">
+    <h3 style="margin-top:0">Explicit weights</h3>
+    {_portfolio_weights_table(weights_table)}
+  </div>
+  <div class="honesty-split">
+    <div class="card" style="margin:0">
+      <h3 style="margin-top:0;color:var(--pos)">Live record — portfolio risk metrics</h3>
+      {_portfolio_metrics_html("Live record", live_metrics, curve)}
+      <canvas id="curve" width="520" height="240"></canvas>
+      <div class="muted">{n_curve} trading days plotted (first publication → latest close; cost-adjusted).</div>
+    </div>
+    <div class="card" style="margin:0">
+      <h3 style="margin-top:0;color:#b45309">Backtest — HYPOTHETICAL</h3>
+      {_portfolio_metrics_html("Backtest (hypothetical)", backtest_metrics, backtest_curve)}
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Sector exposure vs FTSE 100</h3>
+    {_sector_chart_html(sector_mix, ftse_sectors)}
+  </div>
+
+  <h2 id="notes">Research notes</h2>
   <div class="notecards">{cards_html}</div>
 
   <div class="card">
@@ -555,21 +912,19 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
     <div class="muted" style="margin-top:6px">Interactive per-note versions with a live slider are on each note page under “Your scenario”. These are <b>your</b> scenarios, not the published recommendation.</div>
   </div>
 
-  <div class="card">
-    <h2 style="margin-top:0">Model portfolio vs FTSE 100 (indexed to 100, trailing 3 months)</h2>
-    <canvas id="curve" width="1100" height="300"></canvas>
-    <div class="muted">{n_curve} trading days plotted. {CAPTION_NOTHING}</div>
-  </div>
-
-  <div class="card">
+  <div class="card" id="methodology">
     <h2 style="margin-top:0">Methodology &amp; audit trail</h2>
     <ul class="tight">
-      <li><b>Valuation:</b> 5-year explicit FCF forecast (growth = history-derived CAGR, 50% damped, −5%/+15% bounds), terminal g = min(10Y gilt, CAGR/2), WACC = CAPM cost of equity (Blume-adjusted beta, floor 0.40). Blend: 60% DCF / 20% DDM / 20% comps; banks 60% DDM / 40% P/E.</li>
-      <li><b>Frozen inputs:</b> every input is snapshotted at publication with source + derivation; revisions archive under <code>notes/snapshots/</code>; corrections are dated addenda, never edits.</li>
-      <li><b>Audit log:</b> every fetch, publication, and refresh appends to <code>data/audit_log.jsonl</code> — each note stores the audit ids of the fetches behind its numbers.</li>
-      <li><b>Exclusions are recorded:</b> peer multiples above NM caps, single-peer medians, depressed-earnings P/E legs — each note shows what was excluded and why.</li>
+      <li><b>Valuation:</b> 5-year explicit FCF forecast (growth = history-derived CAGR, 50% damped, −5%/+15% bounds), terminal g = min(10Y gilt, CAGR/2), WACC = CAPM cost of equity (Blume-adjusted beta vs ^FTSE over 2y of weekly data, floor 0.40). Blend: 60% DCF / 20% DDM / 20% comps; banks 60% DDM / 40% P/E. A ±30% <b>model-outlier guardrail</b> flags any target beyond that band vs the market price and names the driving leg.</li>
+      <li><b>Performance formulas:</b> annualised volatility = std(daily portfolio returns) × √252 (sample, ddof=1); max drawdown = min(V<sub>t</sub>/max(V<sub>0..t</sub>) − 1); beta = cov(r<sub>p</sub>, r<sub>b</sub>)/var(r<sub>b</sub>); tracking error = std(r<sub>p</sub> − r<sub>b</sub>) × √252; annualised return (CAGR) = (1 + total return)<sup>252/n</sup> − 1; Sharpe = (CAGR − risk-free) / annualised volatility, risk-free = UK 3-month immediate rate (FRED IR3TIB01GBM156N). All computed on the <b>portfolio return series</b>, never an average of stock-level statistics.</li>
+      <li><b>Return basis:</b> total return — Yahoo adjusted close, dividends reinvested. Transaction costs: 0.5% stamp duty reserve tax + 0.1% commission on buys, applied once at inception as a start-of-period drag; no ongoing costs modelled.</li>
+      <li><b>Live vs backtest:</b> the live record only counts decisions published before the fact, measured from each note's first-publication close; the backtest applies <i>current</i> weights to trailing history and is labelled hypothetical everywhere it appears.</li>
+      <li><b>Frozen inputs:</b> every input is snapshotted at publication with source + derivation; revisions archive under <code>notes/snapshots/</code>; corrections are dated addenda, never edits. The tracked window starts at first publication and is not reset by revisions.</li>
+      <li><b>Audit log:</b> every fetch, publication, guardrail flag, and refresh appends to <code>data/audit_log.jsonl</code> — each note stores the audit ids of the fetches behind its numbers.</li>
+      <li><b>Exclusions are recorded:</b> peer multiples above NM caps, single-peer medians, depressed-earnings P/E legs, missing-data legs (DCF excluded with the reason) — each note shows what was excluded and why.</li>
     </ul>
   </div>
+  {_about_html()}
   <div id="update-toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:72px;z-index:60;display:none;background:#0f3460;color:#fff;padding:11px 18px;border-radius:12px;box-shadow:0 8px 22px rgba(15,23,42,0.28);font-size:13.5px">
     <b>Prices updated</b> — <span id="toast-ts"></span>
     · <a href="#" id="toast-reload" style="color:#9fd0ff;text-decoration:underline">view the latest</a>
@@ -597,27 +952,35 @@ def write_dashboard(quotes: dict, curve: list[dict], perf_rows: list[dict],
   </details>
 </main>
 <footer style="max-width:1180px;margin:26px auto 0;padding:14px 20px 34px;border-top:1px solid var(--line);color:#6b7a93;font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between">
-  <span>Regenerated from live market data every refresh cycle &middot; <a href="#audit-trail" style="color:var(--navy)">view the append-only audit trail</a></span>
+  <span>Personal educational project. Not investment advice. Not affiliated with any firm.<br>
+  Regenerated from live market data every refresh cycle &middot; <a href="#audit-trail" style="color:var(--navy)">view the append-only audit trail</a> &middot;
+  <a href="{config.REPO_URL}" style="color:var(--navy)">GitHub repo (source, methodology, audit log)</a></span>
   <span>Python 3.11 &middot; yfinance &middot; FRED &middot; Damodaran</span>
 </footer>
 <script>
 const curveData = {curve_data_js};
-if (curveData.length > 1) {{
-  new Chart(document.getElementById('curve'), {{
+const btData = {bt_data_js};
+function drawCurve(id, rows, hint) {{
+  if (!rows || rows.length < 2) return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, {{
     type: 'line',
-    data: {{ labels: curveData.map(r => r[0]),
+    data: {{ labels: rows.map(r => r[0]),
       datasets: [
-        {{ label: 'Model portfolio', data: curveData.map(r => r[1]), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.2, pointRadius: 0, borderWidth: 2 }},
-        {{ label: 'FTSE 100', data: curveData.map(r => r[2]), borderColor: '#94a3b8', borderDash: [6, 4], fill: false, tension: 0.2, pointRadius: 0, borderWidth: 1.5 }}
+        {{ label: 'Model portfolio', data: rows.map(r => r[1]), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.2, pointRadius: 0, borderWidth: 2 }},
+        {{ label: 'FTSE 100', data: rows.map(r => r[2]), borderColor: '#94a3b8', borderDash: [6, 4], fill: false, tension: 0.2, pointRadius: 0, borderWidth: 1.5 }}
       ]
     }},
     options: {{
       responsive: true, maintainAspectRatio: false,
-      plugins: {{ legend: {{ position: 'bottom' }} }},
-      scales: {{ x: {{ ticks: {{ maxTicksLimit: 10 }} }}, y: {{ title: {{ display: true, text: 'Index (start = 100)' }} }} }}
+      plugins: {{ legend: {{ position: 'bottom' }}, subtitle: {{ display: !!hint, text: hint }} }},
+      scales: {{ x: {{ ticks: {{ maxTicksLimit: 10 }} }}, y: {{ title: {{ display: true, text: 'Index (start = 100, gross of nothing; line starts at 99.4 = net of costs)' }} }} }}
     }}
   }});
 }}
+drawCurve('curve', curveData, 'Live record: {summary.get('window_start') or 'n/a'} → {summary.get('window_end') or 'n/a'}');
+drawCurve('btcurve', btData, 'Backtest — HYPOTHETICAL: trailing 3 months, current weights');
 // ---- live updates: poll refresh_meta.json, toast on new data, optional auto-reload ----
 const PAGE_TS = '{refresh_ts}';
 const liveSel = document.getElementById('live-interval');
@@ -707,13 +1070,26 @@ def _data_quality_html(note: dict) -> str:
     dcf_res = dcf.get("result") or {}
     base = dcf.get("base_fcf_m")
     if not dcf_res.get("value_per_share"):
-        reason = "n/a"
         if base is None or base != base:
             reason = "latest-FY free cash flow missing/NaN on the feed"
+        else:
+            # Pull the recorded reason (e.g. NG: FCF negative in 3 of 4 FYs)
+            # from the derivation when the model recorded an explicit exclusion.
+            deriv = "; ".join(dcf.get("derivation") or [])
+            reason = (deriv[:400] if "DCF excluded" in deriv else
+                      "inputs failed validation (see derivation row)")
         issues.append(
-            f"<li><b>DCF leg omitted:</b> {reason}. The blend re-weights over the "
-            "surviving legs — the published target is derived only from sources "
-            "that returned real numbers.</li>"
+            f"<li><b>DCF leg excluded — reason:</b> {_esc(reason)}. The blend "
+            "re-weights over the surviving legs — the published target is "
+            "derived only from sources that returned real numbers.</li>"
+        )
+    elif dcf.get("base_fcf_used_m") and dcf.get("base_fcf_m") != dcf.get("base_fcf_used_m"):
+        issues.append(
+            f"<li><b>DCF base normalised:</b> latest-FY FCF on the feed is "
+            f"{_esc(_fmt_num(dcf.get('base_fcf_m'), 1))} GBPm (missing or "
+            "non-finite); the DCF instead uses a normalised multi-year average "
+            f"of {_esc(_fmt_num(dcf.get('base_fcf_used_m'), 1))} GBPm over the "
+            "finite trailing FYs — disclosed in the derivation column.</li>"
         )
     if not ddm.get("value_per_share"):
         issues.append("<li><b>DDM leg omitted:</b> DPS/ROE/payout incomplete on the feed.</li>")
@@ -756,8 +1132,10 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
                  "options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } } }); }")
 
     inputs_rows = [
-        ("Base FCF (latest FY)", _fmt_num(dcf.get("base_fcf_m"), 1) + " GBPm",
-         "Yahoo cash_flow: OCF − capex, FX-converted to GBP"),
+        ("Base FCF (used)", _fmt_num(dcf.get("base_fcf_used_m") or dcf.get("base_fcf_m"), 1) + " GBPm",
+         dcf.get("base_fcf_source") or "Yahoo cash_flow: OCF − capex, FX-converted to GBP"),
+        ("Base FCF (latest FY as reported)", _fmt_num(dcf.get("base_fcf_m"), 1) + " GBPm",
+         "as on the feed (NaN = missing)"),
         ("FCF growth path", _esc(dcf.get("fcf_growth_path")),
          (dcf.get("derivation") or [""])[0]),
         ("Terminal growth", _esc(dcf.get("terminal_growth")),
@@ -820,7 +1198,11 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
     perf_html = ""
     if perf:
         perf_html = (
-            "<h2>Tracked performance vs FTSE 100</h2>"
+            "<h2>Tracked performance vs FTSE 100 (live record)</h2>"
+            "<p class='muted'>Window: " + _esc(perf['thesis_date']) + " → "
+            + _esc(perf.get('end_date', '')) + " (" + str(perf.get('trading_days', '–'))
+            + " trading days). Live record = performance since first publication "
+            "only; corrections do not reset the clock.</p>"
             "<table><tr><th>Thesis date</th><th>Tracked</th><th>Price path</th>"
             "<th>Return</th><th>FTSE</th><th>Alpha</th><th>Ann. vol</th><th>Max DD</th></tr>"
             f"<tr><td>{_esc(perf['thesis_date'])}</td>"
@@ -897,6 +1279,17 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
   ul {{ padding-left:20px; }}
   .disclaimer {{ color:#6b7a93; font-size:12px; border-top:1px solid #d7dee9; margin-top:30px; padding-top:12px; }}
   .muted {{ color:#6b7a93; font-size:12.5px; }}
+  .guard-box {{ background:#fef2f2; border:1px solid #fecaca; border-left:5px solid #ef4444; border-radius:10px; padding:10px 14px; margin:12px 0; font-size:13.5px; color:#7f1d1d; }}
+  .backlink {{ font-size:13px; margin-bottom:12px; }}
+  .backlink a {{ color:var(--navy); font-weight:700; }}
+  @media (max-width:640px) {{
+    main {{ padding:14px 12px 30px; }}
+    .band h1 {{ font-size:22px; }}
+    .sumgrid {{ grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); }}
+    body > div[style*="grid-template-columns"], main > div[style*="grid-template-columns"] {{ grid-template-columns:1fr !important; }}
+    th, td {{ padding:5px 7px; font-size:12.5px; }}
+    .table-wrap {{ overflow-x:auto; }}
+  }}
   @media print {{
     body {{ background:#fff; }}
     .band {{ background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
@@ -912,16 +1305,19 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
 <div class="band"><div class="band-inner">
   <h1>{_esc(note['name'])} <span class="tick">({note['ticker']})</span></h1>
   <div style="margin-top:6px">{_badge(note.get('recommendation'))}
-  <span style="margin-left:8px;font-size:13.5px;color:#c7d4ea">Equity research note · FTSE 100 · thesis dated {note.get('published_at', '')[:10]}</span></div>
+  <span style="margin-left:8px;font-size:13.5px;color:#c7d4ea">Equity research note · FTSE 100 · thesis dated {(note.get('first_published_at') or note.get('published_at') or '')[:10]} · revised {(note.get('published_at') or '')[:10]}</span></div>
 </div></div>
 <main>
+<div class="backlink no-print"><a href="../../index.html#note-{_esc(note['ticker']).replace('.', '-').lower()}">← Back to dashboard</a></div>
 <div class="sumcard">
   <div class="headline">{_esc(_round_raw_floats(note.get('headline') or ''))}</div>
   <div class="sumgrid">
     <div class="cell"><div class="l">Price target</div><div class="v">{_fmt_num(note.get('price_target_gbp'))}</div></div>
     <div class="cell"><div class="l">Upside</div><div class="v">{_fmt_pct(note.get('upside_pct'))}</div></div>
-    <div class="cell"><div class="l">Price at pub.</div><div class="v">{_fmt_num(ctx.get('price_gbp_at_publication'))}
+    <div class="cell"><div class="l">Price at publication</div><div class="v">{_fmt_num(ctx.get('price_gbp_at_publication'))}
       <span style="font-size:10.5px;font-weight:500;color:#8593aa"> = {_fmt_num((ctx.get('price_gbp_at_publication') or 0) * 100)}p quoted</span></div></div>
+    <div class="cell"><div class="l">Current price</div><div class="v">{_fmt_num((perf or {}).get('last_price'))}
+      <span style="font-size:10.5px;font-weight:500;color:#8593aa">refreshed each cycle</span></div></div>
     <div class="cell"><div class="l">Alpha so far</div><div class="v">{_fmt_pct(perf['alpha_pct']) if perf else '<span class="zero">–</span>'}</div></div>
     <div class="cell"><div class="l">Review window</div><div class="v">{note.get('review_period_months')}m</div></div>
     <div class="cell"><div class="l">Audit id</div><div class="v" style="font-size:11px;font-weight:600">{_esc(note.get('publication_audit_id', ''))[:19]}</div></div>
@@ -932,6 +1328,7 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
   </div>
 </div>
 
+{_guardrail_banner(note)}
 {_scenario_widget_html(note)}
 {_data_quality_html(note)}
 
@@ -943,10 +1340,14 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
 
 <h2>Thesis</h2>
 <p>{_esc(_round_raw_floats(thesis.get('summary') or ''))}</p>
+{_bull_base_bear_html(note)}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div><h3>Catalysts</h3><ul>{''.join(f'<li>{_esc(c)}</li>' for c in thesis.get('catalysts', []))}</ul></div>
   <div><h3>Risks</h3><ul>{''.join(f'<li>{_esc(r)}</li>' for r in thesis.get('risks', []))}</ul></div>
 </div>
+<h3>What would make me wrong</h3>
+<ul>{''.join(f'<li>{_esc(w)}</li>' for w in (thesis.get('wrong_if') or ['Not defined on this revision of the note.']))}</ul>
+{_esg_html(note)}
 
 <h2>Valuation inputs (frozen at publication)</h2>
 <table>
@@ -955,6 +1356,9 @@ def write_note_page(note: dict, perf: dict | None, monthly: list[dict],
 </table>
 
 {peer_section}
+
+{_sensitivity_grid_html(note)}
+{_reverse_dcf_html(note, (perf or {}).get('last_price'))}
 
 {perf_html}
 {monthly_html}
@@ -976,7 +1380,8 @@ Jan 2025 vintage), CAPM cost of equity with Blume-adjusted beta, peer multiples
 computed from live prices and statements. The full fetch trail is in
 <code>data/audit_log.jsonl</code> (audit id <code>{_esc(note.get('publication_audit_id', ''))}</code>).</p>
 
-<div class="disclaimer">{_esc(config.DISCLAIMER)}</div>
+<div class="disclaimer"><b>Personal educational project. Not investment advice. Not affiliated with any firm.</b><br>{_esc(config.DISCLAIMER)}
+Source &amp; methodology: <a href="{config.REPO_URL}">{config.REPO_URL}</a></div>
 </main>
 <script>{series_js}</script>
 <script>
@@ -1001,7 +1406,7 @@ computed from live prices and statements. The full fetch trail is in
         for (let i = 0; i < sorted.length - 1; i++) {{
           if (sorted[i].shock <= v && v <= sorted[i + 1].shock) {{ lo = sorted[i]; hi = sorted[i + 1]; break; }}
         }}
-        const parse = s => parseFloat(String(s).replace(/[^0-9.\-]/g, ''));
+        const parse = s => parseFloat(String(s).replace(/[^0-9.\\-]/g, ''));
         const t0 = parse(lo.targetEl.textContent), t1 = parse(hi.targetEl.textContent);
         const val = (hi.shock === lo.shock) ? t0 : t0 + (t1 - t0) * (v - lo.shock) / (hi.shock - lo.shock);
         return val.toFixed(2) + ' GBP';
@@ -1018,24 +1423,48 @@ computed from live prices and statements. The full fetch trail is in
 
 def write_all_note_pages(notes: list[dict], perf_by_ticker: dict,
                          monthly_by_ticker: dict,
-                         series_by_ticker: dict | None = None) -> None:
+                         series_by_ticker: dict | None = None,
+                         quotes: dict | None = None) -> None:
     series_by_ticker = series_by_ticker or {}
+    quotes = quotes or {}
     for n in notes:
         if n.get("status") == "published":
             tk = n["ticker"]
-            write_note_page(n, perf_by_ticker.get(tk),
+            perf = perf_by_ticker.get(tk)
+            if perf is None:
+                # No tracked window yet: show the live quote as the current
+                # price so the field is still labelled and populated.
+                q = quotes.get(tk) or {}
+                if q.get("price_gbp"):
+                    perf = {"last_price": q.get("price_gbp")}
+            write_note_page(n, perf,
                             monthly_by_ticker.get(tk) or [],
                             series_by_ticker.get(tk))
 
 
 def _audit_rows_table(rows: list[dict]) -> str:
-    """Render audit records as table rows (shared by audit.html + dashboard)."""
-    return "".join(
-        f"<tr><td>{_esc(str(r.get('ts', '')))[:19]}</td>"
-        f"<td><code>{_esc(str(r.get('event', '')))}</code></td>"
-        f"<td>{_esc(json.dumps({k: v for k, v in r.items() if k not in ('ts', 'event')}))[:160]}</td></tr>"
-        for r in rows
-    )
+    """Render audit records as table rows (shared by audit.html + dashboard).
+
+    Detail is shown in full inside an expandable <details> per row: the old
+    160-character hard truncation cut off provenance payloads (derivation
+    strings, beta diagnostics) entirely.
+    """
+    out = []
+    for r in rows:
+        detail = json.dumps({k: v for k, v in r.items() if k not in ("ts", "event")})
+        if len(detail) > 160:
+            summary = _esc(detail[:160]) + " …"
+            body = (f'<details><summary style="cursor:pointer">{summary}</summary>'
+                    f'<pre style="white-space:pre-wrap;margin:6px 0 0;font-size:11.5px">'
+                    f"{_esc(detail)}</pre></details>")
+        else:
+            body = _esc(detail)
+        out.append(
+            f"<tr><td>{_esc(str(r.get('ts', '')))[:19]}</td>"
+            f"<td><code>{_esc(str(r.get('event', '')))}</code></td>"
+            f"<td>{body}</td></tr>"
+        )
+    return "".join(out)
 
 
 def write_publish_bundle() -> None:
@@ -1079,6 +1508,9 @@ def write_publish_bundle() -> None:
         "th,td{border-bottom:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-size:12.5px}"
         "th{background:#eef2f8;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#51617a}"
         "code{font-size:11.5px}"
+        "details summary{cursor:pointer;color:#0f3460}"
+        "details pre{background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:8px}"
+        "@media(max-width:640px){body{margin:12px}th,td{padding:5px 7px;font-size:12px}}"
         "</style></head><body>"
         "<h1>Append-only audit log (last 500 events)</h1>"
         "<p>Raw JSONL: <a href='audit_log.jsonl'>audit_log.jsonl</a> "

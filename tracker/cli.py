@@ -24,6 +24,8 @@ def cmd_notes(args) -> int:
     argv = list(args.tickers or [])
     if args.force:
         argv.append("--force")
+    if getattr(args, "correction", None):
+        argv += ["--correction", args.correction]
     return auto_notes.main(argv)
 
 
@@ -35,6 +37,21 @@ def cmd_addendum(args) -> int:
         print(f"failed: no published note for {args.ticker}", file=sys.stderr)
         return 1
     print(f"addendum added to {args.ticker.upper()} ({args.kind})")
+    return 0
+
+
+def cmd_sectors(_args) -> int:
+    """Refresh the cached FTSE 100 sector weights (run before deploy/CI)."""
+    from . import portfolio
+
+    payload = portfolio.fetch_ftse_sector_weights()
+    if not payload:
+        print("failed: could not fetch/parse FTSE 100 sector weights "
+              "(cache left untouched)", file=sys.stderr)
+        return 1
+    for s, w in payload["weights"].items():
+        print(f"  {s:42s} {w * 100:5.1f}%")
+    print(f"cached to {portfolio._CACHE} (as of {payload['as_of'][:10]})")
     return 0
 
 
@@ -78,10 +95,13 @@ def main(argv: list[str] | None = None) -> int:
     p_notes = sub.add_parser("notes", help="build+publish notes from live data")
     p_notes.add_argument("tickers", nargs="*")
     p_notes.add_argument("--force", action="store_true", help="refetch cached fundamentals")
+    p_notes.add_argument("--correction", default=None,
+                         help="dated correction text appended to republished notes")
     p_add = sub.add_parser("addendum", help="add a dated addendum to a published note")
     p_add.add_argument("ticker")
     p_add.add_argument("kind", choices=["learning", "thesis_check", "methodology"])
     p_add.add_argument("text", nargs="+")
+    sub.add_parser("sectors", help="refresh cached FTSE 100 sector weights")
     sub.add_parser("status", help="show snapshot, notes, and audit tail")
 
     args = ap.parse_args(argv)
@@ -95,6 +115,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_notes(args)
     if args.cmd == "addendum":
         return cmd_addendum(args)
+    if args.cmd == "sectors":
+        return cmd_sectors(args)
     if args.cmd == "status":
         cmd_status(args)
         return 0

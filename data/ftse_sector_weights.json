@@ -1,0 +1,24 @@
+{
+  "as_of": "2026-10-04T12:42:58.000090+00:00",
+  "source": "FTSE 100 constituent ICB supersector market capitalisation, Wikipedia 'FTSE 100 Index' (attributed there to Bloomberg); normalised to 100%.",
+  "weights": {
+    "Banks": 0.1813,
+    "Health Care": 0.1306,
+    "Industrial Goods and Services": 0.1194,
+    "Energy": 0.1041,
+    "Basic Resources": 0.086,
+    "Food Beverage and Tobacco": 0.0699,
+    "Personal Care Drug and Grocery Stores": 0.0639,
+    "Financial Services": 0.0547,
+    "Utilities": 0.0474,
+    "Insurance": 0.0354,
+    "Consumer Products and Services": 0.0245,
+    "Technology": 0.0225,
+    "Travel and Leisure": 0.0153,
+    "Telecommunications": 0.0141,
+    "Real Estate": 0.0121,
+    "Retailers": 0.0105,
+    "Media": 0.0068,
+    "Construction and Materials": 0.0016
+  }
+}

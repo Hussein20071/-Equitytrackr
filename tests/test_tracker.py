@@ -565,3 +565,315 @@ class LiveUpdateTests(unittest.TestCase):
             doc = self._render(tmp)
             self.assertIn("function sameTs", doc)
             self.assertIn(".slice(0, 16) ===", doc)
+
+class GuardrailTests(unittest.TestCase):
+    """±30% model-outlier guardrail with leg attribution."""
+
+    def test_outlier_flags_and_names_driver(self):
+        from tracker.valuation import outlier_check
+        g = outlier_check(
+            target=60.0, price=100.0,
+            legs={"dcf": 40.0, "ddm": 90.0, "comps_pe": 105.0},
+            weights={"dcf": 0.5, "ddm": 0.3, "comps_pe": 0.2},
+        )
+        self.assertTrue(g["is_outlier"])
+        self.assertAlmostEqual(g["deviation_pct"], -40.0, places=6)
+        # contributions: dcf 0.5*-0.60=-0.30; ddm 0.3*-0.10=-0.03; pe 0.2*+0.05=+0.01
+        self.assertEqual(g["driver_leg"], "dcf")
+        self.assertAlmostEqual(g["driver_contribution_pct"], -30.0, places=6)
+
+    def test_within_band_not_flagged(self):
+        from tracker.valuation import outlier_check
+        g = outlier_check(110.0, 100.0, {"dcf": 120.0}, {"dcf": 1.0})
+        self.assertFalse(g["is_outlier"])
+
+    def test_no_target_no_flag(self):
+        from tracker.valuation import outlier_check
+        self.assertFalse(outlier_check(None, 100.0, {}, {})["is_outlier"])
+        self.assertFalse(outlier_check(90.0, None, {}, {})["is_outlier"])
+
+
+class ReverseDCFTests(unittest.TestCase):
+    """Reverse DCF recovers the growth the market price implies."""
+
+    def test_recovers_known_growth(self):
+        from tracker.valuation import reverse_dcf_growth
+        base, wacc, nd, sh, g = 100.0, 0.08, 0.0, 100.0, 0.04
+        # value at g using the same machinery as the DCF (perpetual g)
+        fcf, pv = base, 0.0
+        for i in range(5):
+            fcf *= (1 + g)
+            pv += fcf / (1 + wacc) ** (i + 1)
+        tv = fcf * (1 + g) / (wacc - g) / (1 + wacc) ** 5
+        price = (pv + tv - nd) / sh
+        r = reverse_dcf_growth(base, wacc, nd, sh, price)
+        self.assertIsNotNone(r["g_implied"])
+        self.assertAlmostEqual(r["g_implied"], g, places=3)
+
+    def test_missing_inputs_returns_none(self):
+        from tracker.valuation import reverse_dcf_growth
+        r = reverse_dcf_growth(None, 0.08, 0.0, 100.0, 50.0)
+        self.assertIsNone(r["g_implied"])
+
+    def test_growth_at_wacc_bounded(self):
+        from tracker.valuation import reverse_dcf_growth
+        r = reverse_dcf_growth(100.0, 0.08, 0.0, 100.0, 1e9)
+        # absurd price: implied perpetual growth reaches the discount rate
+        self.assertIsNone(r["g_implied"])
+        self.assertIsNotNone(r.get("g_bound"))
+
+
+class SensitivityGridTests(unittest.TestCase):
+    """5x5 WACC x terminal-growth DCF grid from frozen inputs."""
+
+    def _note(self):
+        return {"valuation_inputs": {"dcf": {
+            "base_fcf_m": 100.0, "fcf_growth_path": [0.05] * 5,
+            "terminal_growth": 0.02, "wacc": 0.08,
+            "net_debt_m": 50.0, "shares_m": 100.0,
+            "result": {"value_per_share": None}}}}
+
+    def test_shape_and_centre_cell(self):
+        from tracker.scenario import sensitivity_grid
+        from tracker.valuation import DCFInputs, run_dcf
+        grid = sensitivity_grid(self._note())
+        self.assertEqual(len(grid["rows"]), 5)
+        self.assertTrue(all(len(r["cells"]) == 5 for r in grid["rows"]))
+        centre = grid["rows"][2]["cells"][2]
+        ref = run_dcf(DCFInputs(
+            ticker="T", base_fcf_m=100.0, fcf_growth=[0.05] * 5,
+            terminal_growth=0.02, wacc=0.08, net_debt_m=50.0, shares_m=100.0,
+        ))
+        self.assertAlmostEqual(centre, round(ref.value_per_share, 2), places=2)
+
+    def test_higher_wacc_lower_value(self):
+        from tracker.scenario import sensitivity_grid
+        grid = sensitivity_grid(self._note())
+        r0 = [c for c in grid["rows"][0]["cells"] if c is not None]
+        r4 = [c for c in grid["rows"][4]["cells"] if c is not None]
+        self.assertGreater(sum(r0) / len(r0), sum(r4) / len(r4))
+
+
+class BullBaseBearTests(unittest.TestCase):
+    """Bull/base/bear: base = published anchor, monotone across cases."""
+
+    def _note(self):
+        return {
+            "ticker": "TEST.L", "price_target_gbp": 20.47,
+            "target_weights": {"dcf": 0.6, "ddm": 0.2, "comps_pe": 0.2},
+            "market_context": {"price_gbp_at_publication": 18.0},
+            "valuation_inputs": {
+                "dcf": {"base_fcf_m": 100.0, "fcf_growth_path": [0.05] * 5,
+                        "terminal_growth": 0.02, "wacc": 0.08,
+                        "net_debt_m": 50.0, "shares_m": 100.0,
+                        "result": {"value_per_share": 18.87}},
+                "ddm": {"dps_ttm_gbp": 1.0, "g": 0.03, "ke": 0.07,
+                        "value_per_share": 25.75},
+                "comps": {"implied_price_pe": 20.0,
+                          "implied_price_ev_ebitda": None},
+            },
+        }
+
+    def test_cases_ordered_with_assumptions(self):
+        from tracker.scenario import bull_base_bear
+        cases = {c["case"]: c for c in bull_base_bear(self._note())}
+        self.assertEqual(cases["Base"]["price"], 20.47)  # published verbatim
+        self.assertGreater(cases["Bull"]["price"], cases["Base"]["price"])
+        self.assertLess(cases["Bear"]["price"], cases["Base"]["price"])
+        for c in cases.values():
+            self.assertIn("assumption", c)
+
+
+class PortfolioMetricsTests(unittest.TestCase):
+    """Series-level risk metrics on the portfolio return series."""
+
+    def _curve(self, n=40, drift=0.002, bench_drift=0.0):
+        out = []
+        p, b = 100.0, 5000.0
+        for i in range(n):
+            out.append({"date": f"2026-01-{(i % 28) + 1:02d}",
+                        "portfolio": round(p, 4), "benchmark": round(b, 2)})
+            # alternate the drift so daily returns have non-zero dispersion
+            p *= (1 + drift) * (1.001 if i % 2 else 0.999)
+            b *= (1 + bench_drift)
+        return out
+
+    def test_basic_metrics(self):
+        from tracker.performance import portfolio_metrics
+        m = portfolio_metrics(self._curve(), rf=0.037)
+        expected = 1.0
+        for i in range(39):
+            expected *= 1.002 * (1.001 if i % 2 else 0.999)
+        self.assertAlmostEqual(m["total_return_pct"],
+                               (expected - 1) * 100, places=1)
+        self.assertGreater(m["ann_vol_pct"], 0)
+        self.assertEqual(m["max_drawdown_pct"], 0.0)   # monotone up
+        self.assertIsNone(m["beta_vs_bench"])          # flat bench -> var 0
+        self.assertGreater(m["tracking_error_pct"], 0)
+        self.assertIsNotNone(m["sharpe"])
+
+    def test_beta_with_varying_bench(self):
+        from tracker.performance import portfolio_metrics
+        m = portfolio_metrics(self._curve(bench_drift=0.001), rf=0.037)
+        self.assertIsNotNone(m["beta_vs_bench"])
+        self.assertGreater(m["beta_vs_bench"], 0)
+
+    def test_short_curve_empty(self):
+        from tracker.performance import portfolio_metrics
+        self.assertEqual(portfolio_metrics([], rf=None), {})
+        self.assertEqual(portfolio_metrics([{"date": "d", "portfolio": 1,
+                                             "benchmark": 1}], rf=None), {})
+
+    def test_inception_cost_applied(self):
+        from tracker.portfolio import apply_inception_cost, TOTAL_BUY_COST_RATE
+        curve = [{"date": "d", "portfolio": 100.0, "benchmark": 5000.0}]
+        out = apply_inception_cost(curve)
+        self.assertAlmostEqual(out[0]["portfolio"],
+                               100.0 * (1 - TOTAL_BUY_COST_RATE), places=6)
+        self.assertEqual(out[0]["benchmark"], 5000.0)  # bench untouched
+
+
+class WeightsTableTests(unittest.TestCase):
+    """£100k weights table: weights sum, positions, disclosed costs."""
+
+    def test_table_rows_and_costs(self):
+        from tracker.portfolio import (build_weights_table, NOTIONAL_GBP,
+                                       TOTAL_BUY_COST_RATE, SECTOR_MAP)
+        wt = build_weights_table({"AZN.L": {"price_gbp": 118.7}})
+        rows = wt["rows"]
+        self.assertEqual(len(rows), 8)
+        self.assertAlmostEqual(sum(r["weight_pct"] for r in rows), 100.0,
+                               places=6)
+        for r in rows:
+            self.assertAlmostEqual(
+                r["position_gbp"],
+                round(r["weight_pct"] / 100 * NOTIONAL_GBP, 2), places=2)
+            self.assertAlmostEqual(
+                r["buy_cost_gbp"],
+                round(r["position_gbp"] * TOTAL_BUY_COST_RATE, 2), places=2)
+            self.assertEqual(r["sector"], SECTOR_MAP[r["ticker"]])
+        azn = next(r for r in rows if r["ticker"] == "AZN.L")
+        self.assertEqual(azn["approx_shares"],
+                         int(0.20 * NOTIONAL_GBP / 118.7))
+
+
+class TrackingStartTests(unittest.TestCase):
+    """Live record starts at FIRST publication, not the latest revision."""
+
+    def _hist(self, days):
+        return pd.DataFrame([
+            {"Ticker": "TEST.L", "Date": d, "Close_gbp": 100.0 + 10 * i,
+             "Volume": 1} for i, d in enumerate(days)
+        ])
+
+    def test_first_published_at_wins(self):
+        first = datetime(2025, 6, 2)
+        revision = datetime(2025, 8, 1)
+        days = [first + timedelta(days=7 * i) for i in range(9)]
+        hist = self._hist(days)
+        bench = pd.DataFrame([
+            {"Ticker": "^FTSE", "Date": d, "Close_gbp": 100.0, "Volume": 1}
+            for d in days
+        ])
+        note = {"ticker": "TEST.L",
+                "first_published_at": first.isoformat(),
+                "published_at": revision.isoformat(),
+                "price_target_gbp": 110.0, "recommendation": "BUY"}
+        res = performance.note_performance(note, hist, bench)
+        self.assertEqual(res["thesis_date"], str(days[0].date()))
+        self.assertEqual(res["end_date"], str(days[-1].date()))
+        self.assertEqual(res["base_price"], 100.0)
+
+    def test_summarize_window_bounds(self):
+        rows = [
+            {"ticker": "A", "alpha_pct": 1.0, "return_pct": 2.0, "rec": "BUY",
+             "pt": None, "last_price": 1.0, "ann_vol_pct": None,
+             "max_drawdown_pct": None, "trading_days": 5,
+             "thesis_date": "2026-09-21", "end_date": "2026-10-02"},
+            {"ticker": "B", "alpha_pct": -1.0, "return_pct": -2.0,
+             "rec": "SELL", "pt": None, "last_price": 1.0,
+             "ann_vol_pct": None, "max_drawdown_pct": None, "trading_days": 3,
+             "thesis_date": "2026-09-19", "end_date": "2026-09-30"},
+        ]
+        s = performance.summarize(rows)
+        self.assertEqual(s["window_start"], "2026-09-19")
+        self.assertEqual(s["window_end"], "2026-10-02")
+        self.assertEqual(s["total_trading_days"], 8)
+
+
+class PublishPreservationTests(unittest.TestCase):
+    """Republishing inherits the first-publication anchor and addenda."""
+
+    def test_publish_keeps_first_publication_and_addenda(self):
+        import json as _json
+        import tempfile
+        from pathlib import Path as _Path
+        from unittest import mock as _mock
+
+        from tracker import research
+
+        with tempfile.TemporaryDirectory() as td:
+            notes_dir = _Path(td) / "notes"
+            notes_dir.mkdir()
+            prior = {
+                "schema": "uk-equity-note/2", "ticker": "TEST.L",
+                "name": "Test", "status": "published",
+                "created_at": "2026-09-19T08:00:00+00:00",
+                "published_at": "2026-09-19T08:00:00+00:00",
+                "first_published_at": "2026-09-19T08:00:00+00:00",
+                "headline": "h",
+                "thesis": {"summary": "s", "catalysts": [], "risks": [],
+                           "wrong_if": []},
+                "recommendation": "HOLD", "price_target_gbp": 10.0,
+                "target_weights": {}, "upside_pct": 0.0,
+                "valuation_inputs": {
+                    "is_bank": False, "beta_raw": None, "beta_adjusted": None,
+                    "dcf": {"base_fcf_m": None, "base_fcf_used_m": None,
+                            "base_fcf_source": "", "fcf_growth_path": [],
+                            "terminal_growth": None, "wacc": None,
+                            "wacc_source": "", "net_debt_m": None,
+                            "shares_m": None, "result": {}, "derivation": []},
+                    "ddm": {"value_per_share": None, "derivation": []},
+                    "comps": {"implied_price_pe": None,
+                              "implied_price_ev_ebitda": None,
+                              "derivation": []}},
+                "market_context": {"price_gbp_at_publication": 9.5},
+                "next_events": None, "esg": None,
+                "provenance": {}, "audit_refs": [], "benchmark": "^FTSE",
+                "review_period_months": 3, "review_due_at": None,
+                "addenda": [{"kind": "learning", "ts": "2026-09-20",
+                             "text": "prior note"}],
+                "publication_audit_id": "x",
+            }
+            (notes_dir / "test-l.json").write_text(
+                _json.dumps(prior), encoding="utf-8")
+
+            draft = dict(prior)
+            draft["status"] = "draft"
+            draft["addenda"] = []
+            draft["recommendation"] = "BUY"
+            fake_log = _Path(td) / "audit_log.jsonl"
+            with _mock.patch.object(research.config, "NOTES_DIR",
+                                    str(notes_dir)), \
+                 _mock.patch.object(research.audit, "_log_path",
+                                    return_value=fake_log), \
+                 _mock.patch.object(research.data, "fetch_quotes",
+                                    return_value={"TEST.L":
+                                                  {"price_gbp": 9.5}}), \
+                 _mock.patch.object(research, "_fetch_next_events",
+                                    return_value=None), \
+                 _mock.patch.object(research, "_fetch_esg",
+                                    return_value=None):
+                pub = research.publish(
+                    draft, headline="h2", summary="s2",
+                    catalysts=[], risks=[], correction="correction text",
+                    wrong_if=["w1"],
+                )
+            self.assertEqual(pub["first_published_at"],
+                             "2026-09-19T08:00:00+00:00")
+            texts = [a["text"] for a in pub["addenda"]]
+            self.assertTrue(any(t == "prior note" for t in texts))
+            self.assertTrue(any(t == "correction text" for t in texts))
+            self.assertEqual(pub["thesis"]["wrong_if"], ["w1"])
+            self.assertNotEqual(pub["published_at"],
+                                "2026-09-19T08:00:00+00:00")

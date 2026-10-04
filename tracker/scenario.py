@@ -25,11 +25,13 @@ from __future__ import annotations
 SHOCKS = [-0.02, -0.01, -0.005, 0.0, 0.005, 0.01, 0.02]
 
 
-def _dcf_value_at(dcf: dict, wacc: float) -> float | None:
+def _dcf_value_at(dcf: dict, wacc: float,
+                  terminal_growth_override: float | None = None) -> float | None:
     """Replicates tracker.valuation.run_dcf with the published frozen inputs."""
     base_fcf = dcf.get("base_fcf_m")
     path = dcf.get("fcf_growth_path") or []
-    tg = dcf.get("terminal_growth")
+    tg = dcf.get("terminal_growth") if terminal_growth_override is None \
+        else terminal_growth_override
     shares = dcf.get("shares_m")
     net_debt = dcf.get("net_debt_m")
     if not (base_fcf and path and tg is not None and shares and net_debt is not None):
@@ -120,6 +122,76 @@ def scenario_grid(note: dict, shocks: list[float] | None = None) -> list[dict]:
             "published": False,
         })
     return grid
+
+
+def sensitivity_grid(note: dict,
+                     wacc_steps: tuple = (-0.02, -0.01, 0.0, 0.01, 0.02),
+                     tg_steps: tuple = (-0.005, -0.0025, 0.0, 0.0025, 0.005)) -> list[dict]:
+    """5x5 DCF sensitivity: WACC (rows) x terminal growth (columns).
+
+    DCF leg only -- DDM has no terminal-growth input and comps legs are
+    multiple-based, so the grid is labelled as DCF-only everywhere it is
+    shown. Every cell re-derives the DCF from the frozen published inputs
+    with the same formula as tracker.valuation.run_dcf; nothing is fetched.
+    Returns rows sorted by WACC shock (each row: wacc_shock, wacc,
+    cells[terminal-growth values in tg_steps order]).
+    """
+    v = (note or {}).get("valuation_inputs") or {}
+    dcf = v.get("dcf") or {}
+    w0, tg0 = dcf.get("wacc"), dcf.get("terminal_growth")
+    if w0 is None or tg0 is None:
+        return []
+    rows = []
+    for dw in wacc_steps:
+        cells = []
+        for dg in tg_steps:
+            tg = tg0 + dg
+            val = (_dcf_value_at(dcf, w0 + dw, terminal_growth_override=tg)
+                   if w0 + dw > tg else None)
+            cells.append(round(val, 2) if val is not None else None)
+        rows.append({
+            "wacc_shock": dw,
+            "wacc": round(w0 + dw, 4),
+            "cells": cells,
+        })
+    return {"tg_steps": list(tg_steps), "rows": rows}
+
+
+def bull_base_bear(note: dict) -> list[dict]:
+    """Bull / base / bear cases with a price and the assumption behind each.
+
+    Derived from the same frozen-input machinery as the reader scenarios:
+    bull = discount rate 2pp lower, bear = 2pp higher, base = the published
+    target (never recomputed). The assumption line states exactly what
+    moves -- no other input is touched, so the cases are transparent and
+    reproducible rather than three invented stories.
+    """
+    grid = scenario_grid(note)
+    if not grid:
+        return []
+    by = {round(r["shock"], 4): r for r in grid}
+    pub_px = (note.get("market_context") or {}).get("price_gbp_at_publication")
+
+    def entry(name, r, assumption):
+        if not r:
+            return {"case": name, "price": None, "assumption": assumption}
+        t = r.get("target")
+        upside = (round((t / pub_px - 1) * 100, 1)
+                  if (t and pub_px) else None)
+        return {"case": name, "price": t, "upside_pct": upside,
+                "assumption": assumption}
+
+    return [
+        entry("Bull", by.get(-0.02),
+              "Key assumption: discount rate 2pp lower than published; all "
+              "other frozen inputs unchanged"),
+        entry("Base", by.get(0.0),
+              "Key assumption: published model -- frozen inputs, published "
+              "weights (anchor, never recomputed)"),
+        entry("Bear", by.get(0.02),
+              "Key assumption: discount rate 2pp higher than published; all "
+              "other frozen inputs unchanged"),
+    ]
 
 
 def diff_quotes(prev: dict | None, quotes: dict) -> dict | None:

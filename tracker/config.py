@@ -49,3 +49,16 @@ DISCLAIMER = (
     "Educational project. Not investment advice. Data may be delayed or "
     "inaccurate; verify independently before acting on anything here."
 )
+
+FOOTER_DISCLAIMER = (
+    "Personal educational project. Not investment advice. "
+    "Not affiliated with any firm."
+)
+
+REPO_URL = "https://github.com/Hussein20071/-Equitytrackr"
+
+# Short-tenor UK risk-free rate for portfolio metrics (Sharpe): OECD 3-month
+# immediate/interbank rate via FRED. IR3MGBM156N was tested and does not exist
+# (404); IR3TIB01GBM156N does. fundamentals.short_rate_uk() falls back to the
+# 10Y gilt (disclosed) if the 3M series is unavailable.
+RF_SHORT_SERIES = "IR3TIB01GBM156N"

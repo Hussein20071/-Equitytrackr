@@ -87,17 +87,22 @@ def build_note(ticker: str) -> dict:
     import statistics
 
     # Beta methodology (in priority order, all disclosed):
-    #   1. OLS regression vs the benchmark we actually track (^FTSE), 52 weekly
-    #      obs -- per-name by construction. Yahoo's feed beta for .L names is
-    #      computed against the S&P 500 (AZN feed 0.20 vs measured-vs-FTSE
-    #      ~1.45), the wrong benchmark for a FTSE 100 tracker.
+    #   1. OLS regression vs the benchmark we actually track (^FTSE), 2 years
+    #      of weekly observations (~104 obs, minimum 52) -- per-name by
+    #      construction. Yahoo's feed beta for .L names is computed against
+    #      the S&P 500 (AZN feed 0.20 vs measured-vs-FTSE ~1.3), the wrong
+    #      benchmark for a FTSE 100 tracker. The 2-year window replaced the
+    #      original 1-year window on 2026-10-04: with 52 obs, BP and SHEL
+    #      pinned at the 0.40 beta floor (1y betas of -0.23 and +0.12 are
+    #      window noise); 104 weekly obs stabilises them without changing
+    #      the estimator.
     #   2. Feed beta (fallback, basis undisclosed by the vendor).
     #   3. Peer-median (last resort; collapsed to one shared number historically).
     beta_raw = None
     beta_fallback_prov = None
     from . import data as _data
 
-    beta_raw, beta_reg_prov = _data.regression_beta(ticker)
+    beta_raw, beta_reg_prov = _data.regression_beta(ticker, period="2y", min_weeks=52)
     if beta_raw is not None:
         beta_fallback_prov = beta_reg_prov
     elif fin.beta is not None:
@@ -181,9 +186,46 @@ def build_note(ticker: str) -> dict:
     dcf_res = None
     dcf_errs = []
     fcf_base = fin.fcf_m
+    fcf_base_note = None
     if fcf_base is not None and not math.isfinite(fcf_base):
         dcf_errs.append("latest-FY FCF is not a finite number on the feed")
         fcf_base = None
+    if fcf_base is not None and fcf_base <= 0:
+        dcf_errs.append(
+            f"latest-FY FCF is GBP {fcf_base:,.0f}m (non-positive on the feed)"
+        )
+        fcf_base = None
+    if fcf_base is None:
+        # Missing latest FY (e.g. RIO: NaN on the feed): fall back to a
+        # normalised multi-year FCF average over the finite trailing FYs,
+        # disclosed. If the average itself is not positive (e.g. NG: FCF
+        # negative in 3 of 4 trailing years), the DCF is excluded with an
+        # explicit data-driven reason and the blend re-weights over the
+        # surviving legs.
+        finite = [v for v in (fin.fcf_history_m or [])
+                  if isinstance(v, (int, float)) and math.isfinite(v)]
+        if len(finite) >= 2:
+            avg = sum(finite) / len(finite)
+            if avg > 0:
+                fcf_base = avg
+                fcf_base_note = (
+                    f"base FCF = normalised multi-year average of the "
+                    f"{len(finite)} finite trailing FYs ("
+                    + ", ".join(f"{v:,.0f}" for v in finite)
+                    + f") = {avg:,.0f} GBPm; latest-FY value missing/non-finite "
+                    f"on the feed ({'; '.join(dcf_errs) or 'no value'})"
+                )
+                dcf_errs = []
+            else:
+                neg = sum(1 for v in finite if v <= 0)
+                dcf_errs.append(
+                    f"DCF excluded: FY free cash flow (OCF - capex) is "
+                    f"non-positive in {neg} of the {len(finite)} trailing "
+                    f"financial years (" + ", ".join(f"{v:,.0f}" for v in finite)
+                    + f" GBPm; latest FY {fin.fcf_m and f'{fin.fcf_m:,.0f}'}"
+                    + ") -- a DCF cannot be run from a negative base; "
+                    "the blend re-weights over the surviving legs"
+                )
     if (fcf_base and fin.shares_m and fin.net_debt_m is not None and wacc):
         try:
             dcf_res = valuation.run_dcf(valuation.DCFInputs(
@@ -194,7 +236,9 @@ def build_note(ticker: str) -> dict:
                 wacc=wacc,
                 net_debt_m=fin.net_debt_m,
                 shares_m=fin.shares_m,
-                derivation=[growth_deriv, tg_deriv, wacc_deriv] + [p["derivation"] for p in ke_provs],
+                derivation=[growth_deriv, tg_deriv, wacc_deriv]
+                           + ([fcf_base_note] if fcf_base_note else [])
+                           + [p["derivation"] for p in ke_provs],
             ))
             dcf_leg = dcf_res.value_per_share
         except ValueError as exc:
@@ -251,11 +295,33 @@ def build_note(ticker: str) -> dict:
     target, weights, blend_deriv = valuation.blend_legs(legs)
     if bank_note:
         blend_deriv.insert(0, bank_note)
+    if fcf_base_note:
+        blend_deriv.append(fcf_base_note)
     if target is None:
         raise RuntimeError(
             f"{ticker}: no valuation leg could be computed from live data "
             f"(dcf errs: {dcf_errs or 'none'})"
         )
+
+    # --- model sanity guardrail --------------------------------------
+    # ±30% band vs the market price, with leg attribution. Stored on the
+    # note at build time so the site can show the flag everywhere the
+    # target appears; also audited.
+    guard = valuation.outlier_check(
+        target, price,
+        {"dcf": dcf_leg, "ddm": ddm_leg, "comps_pe": pe_leg,
+         "comps_ev_ebitda": comps.implied_price_ev_ebitda},
+        weights,
+    )
+    guard["checked_at"] = _now_utc()
+    guard["price_used"] = price
+    if guard["is_outlier"]:
+        audit.record("model_outlier_flagged", {
+            "tickers": [ticker],
+            "deviation_pct": guard["deviation_pct"],
+            "driver_leg": guard["driver_leg"],
+            "driver_contribution_pct": guard["driver_contribution_pct"],
+        })
 
     upside = round(target / price - 1, 4) if price else None
 
@@ -291,12 +357,16 @@ def build_note(ticker: str) -> dict:
         "price_target_gbp": target,
         "target_weights": weights,
         "upside_pct": (round(upside * 100, 2) if upside is not None else None),
+        "model_checks": guard,
         "valuation_inputs": {
             "is_bank": is_bank,
             "beta_raw": beta_raw,
             "beta_adjusted": beta,
             "dcf": {
                 "base_fcf_m": fin.fcf_m,
+                "base_fcf_used_m": (round(fcf_base, 1) if dcf_res else None),
+                "base_fcf_source": (fcf_base_note or
+                                    "latest FY OCF - capex, FX-converted"),
                 "fcf_growth_path": growth,
                 "terminal_growth": tg,
                 "wacc": wacc,
@@ -337,6 +407,8 @@ def build_note(ticker: str) -> dict:
             "price_source": "Yahoo Finance (yfinance fast_info)",
             "currency_note": "LSE quotes GBp; converted to GBP",
         },
+        "next_events": _fetch_next_events(ticker),
+        "esg": _fetch_esg(ticker),
         "provenance": provenance,
         "audit_refs": [],
         "benchmark": config.BENCHMARK,
@@ -344,6 +416,84 @@ def build_note(ticker: str) -> dict:
         "review_due_at": None,
         "addenda": [],
     }
+
+
+def _fetch_esg(ticker: str) -> dict | None:
+    """Sustainalytics ESG risk scores from the Yahoo feed, or None.
+
+    Scores are RISK scores (lower = less risk) on a 0-40+ scale; the
+    direction is stated wherever displayed. Missing data returns None and
+    the note says so -- never a fabricated score.
+    """
+    try:
+        import yfinance as yf
+
+        s = yf.Ticker(ticker).sustainability
+        if s is None or getattr(s, "empty", True):
+            return None
+
+        def _get(key: str) -> float | None:
+            try:
+                return float(s.loc[key].iloc[0])
+            except (KeyError, IndexError, TypeError, ValueError):
+                return None
+
+        out = {
+            "total_esg": _get("totalEsg"),
+            "environment": _get("environmentScore"),
+            "social": _get("socialScore"),
+            "governance": _get("governanceScore"),
+            "source": "Yahoo Finance Ticker.sustainability (Sustainalytics ESG risk score; lower = less risk)",
+            "retrieved_at": _now_utc(),
+        }
+        return out if out["total_esg"] is not None else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _fetch_next_events(ticker: str) -> dict | None:
+    """Next announced earnings date from the Yahoo calendar, or None.
+
+    yfinance returns either a dict ({"Earnings Date": [ts, ts, ts]}) or a
+    DataFrame depending on version; both handled. LSE names frequently
+    have no calendar entry -- the note then says the feed has none rather
+    than inventing a date.
+    """
+    try:
+        import yfinance as yf
+
+        cal = yf.Ticker(ticker).calendar
+        date = None
+        if isinstance(cal, dict):
+            d = cal.get("Earnings Date")
+            if isinstance(d, (list, tuple)) and d:
+                date = str(d[0])[:10]
+            elif d is not None:
+                date = str(d)[:10]
+        elif cal is not None and getattr(cal, "empty", True) is False:
+            try:
+                row = cal.loc["Earnings Date"]
+                vals = list(row.dropna().values)
+                if vals:
+                    date = str(vals[0])[:10]
+            except (KeyError, IndexError):
+                date = None
+        if not date:
+            return None
+        # Only a FUTURE date counts as "next results"; a past date from the
+        # feed is the last announced set and must not be labelled next.
+        try:
+            if datetime.fromisoformat(date) < datetime.now():
+                return None
+        except ValueError:
+            return None
+        return {
+            "earnings_date": date,
+            "source": "Yahoo Finance Ticker.calendar (next announced earnings date)",
+            "retrieved_at": _now_utc(),
+        }
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _recommend(target: float | None, price: float | None) -> str | None:
@@ -359,11 +509,20 @@ def _recommend(target: float | None, price: float | None) -> str | None:
 
 def publish(note: dict, headline: str, summary: str,
             catalysts: list[str], risks: list[str],
-            published_by: str = "system") -> dict:
+            published_by: str = "system",
+            correction: str | None = None,
+            wrong_if: list[str] | None = None) -> dict:
     """Finalize a draft: stamp thesis text, freeze inputs, archive priors.
 
     Only the analyst-written *narrative* is provided here; every number
     already on the note came from live sources at build time.
+
+    Re-publication keeps the live record continuous: when a published
+    note for the same ticker already exists, the new note inherits
+    ``first_published_at`` and the original publication price, carries
+    over prior addenda, and (when ``correction`` is given) appends a dated
+    addendum describing the change. ``published_at`` becomes the revision
+    date; the tracked window still starts at first publication.
     """
     if note.get("status") != "draft":
         raise ValueError("Only draft notes can be published")
@@ -375,8 +534,70 @@ def publish(note: dict, headline: str, summary: str,
         if price:
             note["market_context"]["price_gbp_at_publication"] = price
 
+    prior = load_note(note["ticker"])
+    if prior and prior.get("status") == "published":
+        note["first_published_at"] = (prior.get("first_published_at")
+                                      or prior.get("published_at"))
+        prior_px = ((prior.get("market_context") or {})
+                    .get("price_gbp_at_first_publication")
+                    or (prior.get("market_context") or {})
+                    .get("price_gbp_at_publication"))
+        if prior_px is not None:
+            note["market_context"]["price_gbp_at_first_publication"] = prior_px
+        note["addenda"] = list(prior.get("addenda") or [])
+    else:
+        note["first_published_at"] = note.get("created_at")
+
+    # The live record anchors at the EARLIEST publication of this note, which
+    # may predate the immediately-prior revision (revision chains lose the
+    # original otherwise). Snapshots are append-only, so the earliest one is
+    # the true first publication.
+    base_slug = _slug(note["ticker"])
+    snap_dir = _notes_dir() / "snapshots"
+    earliest = note.get("first_published_at")
+    earliest_px = None
+    snap_cands = []
+    if snap_dir.exists():
+        for sp in sorted(snap_dir.glob(f"{base_slug}_*.json")):
+            try:
+                spd = json.loads(sp.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            sp_pub = spd.get("published_at")
+            sp_px = (spd.get("market_context") or {}).get(
+                "price_gbp_at_publication")
+            if sp_pub:
+                snap_cands.append((sp_pub, sp_px))
+    if snap_cands:
+        min_pub, _ = min(snap_cands, key=lambda t: t[0])
+        if earliest is None or min_pub < earliest:
+            earliest = min_pub
+        # The price at first publication comes from the earliest snapshot
+        # THAT CARRIES A PRICE (early snapshots can predate the quote fetch),
+        # even when the prior revision chain already carries a (later) one.
+        priced = [(p, x) for p, x in snap_cands if x is not None]
+        if priced:
+            earliest_px = min(priced, key=lambda t: t[0])[1]
+    if earliest_px is None:
+        earliest_px = ((note.get("market_context") or {})
+                       .get("price_gbp_at_first_publication"))
+    note["first_published_at"] = earliest
+    if earliest_px is not None:
+        note["market_context"]["price_gbp_at_first_publication"] = earliest_px
+    if correction:
+        note["addenda"].append({
+            "kind": "methodology",
+            "ts": _now_utc(),
+            "text": correction,
+        })
+
     note["headline"] = headline
-    note["thesis"] = {"summary": summary, "catalysts": catalysts or [], "risks": risks or []}
+    note["thesis"] = {
+        "summary": summary,
+        "catalysts": catalysts or [],
+        "risks": risks or [],
+        "wrong_if": wrong_if or [],
+    }
 
     note["audit_refs"] = [
         r for r in audit.tail(400)
@@ -474,9 +695,9 @@ def render_markdown(note: dict) -> str:
         f"| Terminal growth | {dcf['terminal_growth']} | {dcf['derivation'][1] if len(dcf['derivation']) > 1 else ''} |",
         f"| WACC (ke) | {round(dcf['wacc'], 4) if dcf['wacc'] else None} | {dcf['wacc_source']} |",
         f"| Net debt | {dcf['net_debt_m'] and round(dcf['net_debt_m'], 1)} GBP m | Balance sheet latest FY |",
-        f"| DCF value/share | {dcf['result']['value_per_share']} | 2-stage FCF model |",
-        f"| DDM value/share | {v['ddm']['value_per_share']} | {'; '.join(v['ddm']['derivation'])} |",
-        f"| Comps P/E implied | {v['comps']['implied_price_pe']} | median peer P/E x EPS |",
+        f"| DCF value/share | {(dcf.get('result') or {}).get('value_per_share')} | 2-stage FCF model |",
+        f"| DDM value/share | {v['ddm'].get('value_per_share')} | {'; '.join(v['ddm'].get('derivation') or [])} |",
+        f"| Comps P/E implied | {v['comps'].get('implied_price_pe')} | median peer P/E x EPS |",
         f"| **Blended target** | **{note['price_target_gbp']}** | weights {note['target_weights']} |",
         "",
         f"Price at publication: GBP {ctx.get('price_gbp_at_publication')}",

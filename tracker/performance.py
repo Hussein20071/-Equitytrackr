@@ -35,12 +35,30 @@ def _window(hist: pd.DataFrame, ticker: str, start: datetime) -> pd.DataFrame | 
     return after
 
 
+def _tracking_start(note: dict) -> datetime | None:
+    """When did the live record for this note start?
+
+    The FIRST publication date: corrections re-freeze inputs but do not
+    reset the clock -- the track record stays continuous and the revision
+    is visible in the note's addenda and published_at (revision date).
+    """
+    pub = (note.get("first_published_at") or note.get("published_at")
+           or note.get("created_at"))
+    return _parse(pub) if pub else None
+
+
 def note_performance(note: dict, hist: pd.DataFrame, bench: pd.DataFrame) -> dict | None:
-    """Tracked performance of one note vs the benchmark since its thesis date."""
-    pub = note.get("published_at") or note.get("created_at")
-    if not pub:
+    """Live-record performance of one note vs the benchmark.
+
+    Window: from the first daily close on or after the note's FIRST
+    publication date (falling back to the last close before it, for notes
+    published on non-trading days) through the latest close. Both window
+    endpoints are returned so every figure can be date-stamped on screen.
+    Values in GBP.
+    """
+    start = _tracking_start(note)
+    if not start:
         return None
-    start = _parse(pub)
 
     tk = note["ticker"]
     nh = _window(hist, tk, start)
@@ -69,6 +87,7 @@ def note_performance(note: dict, hist: pd.DataFrame, bench: pd.DataFrame) -> dic
     return {
         "ticker": tk,
         "thesis_date": str(base_date.date()),
+        "end_date": str(last_date.date()),
         "days_tracked": days,
         "trading_days": len(nh),
         "base_price": round(base_px, 2),
@@ -105,7 +124,7 @@ def max_drawdown(closes: pd.Series) -> float | None:
 
 
 def monthly_attribution(note: dict, hist: pd.DataFrame, bench: pd.DataFrame) -> list[dict]:
-    """Calendar-month return vs benchmark since the note's thesis date.
+    """Calendar-month return vs benchmark since the note's first publication.
 
     Returns [{month, stock_pct, bench_pct, alpha_pct}] oldest first.
     """
@@ -184,33 +203,46 @@ def note_series(note: dict, hist: pd.DataFrame, bench: pd.DataFrame,
     ]
 
 
-def performance_caption(summary: dict, curve: list[dict]) -> str:
-    """One-sentence, auto-generated summary of model-portfolio performance."""
+def performance_caption(summary: dict, curve: list[dict], label: str = "Live record") -> str:
+    """One-sentence, date-stamped summary of model-portfolio performance."""
     n = summary.get("n", 0) if summary else 0
     days = len(curve or [])
     if not n or days < 2:
         return ("Track record accrues daily; the first trading days are "
                 "shown below.")
+    start, end = curve[0]["date"], curve[-1]["date"]
     p0, p1 = curve[0]["portfolio"], curve[-1]["portfolio"]
     b0, b1 = curve[0]["benchmark"], curve[-1]["benchmark"]
     ret, bret = p1 - 100.0, b1 - 100.0
     rel = "ahead of" if ret > bret else ("behind" if ret < bret else "in line with")
     hit = summary.get("hit_rate_pct")
     return (
-        f"Model portfolio {ret:+.1f}% vs FTSE 100 {bret:+.1f}% over {days} "
-        f"trading days ({rel} benchmark by {abs(ret - bret):.1f}pp); "
-        f"{n} published note{'s' if n != 1 else ''} tracked, "
-        f"hit rate {hit:.0f}%; static weights, no rebalancing."
+        f"{label}: model portfolio {ret:+.1f}% vs FTSE 100 {bret:+.1f}% "
+        f"over {days} trading days ({start} to {end}; {rel} benchmark by "
+        f"{abs(ret - bret):.1f}pp); {n} note{'s' if n != 1 else ''} tracked "
+        f"since first publication, hit rate {hit:.0f}%; "
+        "static weights, no rebalancing."
     )
 
 
-def portfolio_curve(hist: pd.DataFrame, bench: pd.DataFrame, months: int = 3) -> list[dict]:
-    """Daily model-portfolio value vs benchmark over the trailing window.
+def portfolio_curve(hist: pd.DataFrame, bench: pd.DataFrame,
+                    months: int | None = 3,
+                    since: str | datetime | None = None) -> list[dict]:
+    """Daily model-portfolio value vs benchmark over a window.
 
     Static weights from config.PORTFOLIO renormalised over available
-    tickers; no rebalancing.
+    tickers; no rebalancing (buy-and-hold: each position compounds from
+    its start-of-window weight share).
+
+    Window: ``since`` (a date string) for the live-record window, or the
+    trailing ``months`` for the backtest window. Callers must label which
+    window they are showing -- the two are never mixed on screen.
     """
-    cutoff = pd.Timestamp.utcnow().tz_localize(None) - pd.DateOffset(months=months)
+    if since is not None:
+        cutoff = pd.Timestamp(since).tz_localize(None)
+    else:
+        months = months or 3
+        cutoff = pd.Timestamp.utcnow().tz_localize(None) - pd.DateOffset(months=months)
     sub = hist[hist["Date"] >= cutoff]
     if sub.empty:
         return []
@@ -240,8 +272,67 @@ def portfolio_curve(hist: pd.DataFrame, bench: pd.DataFrame, months: int = 3) ->
     return curve
 
 
+def portfolio_metrics(curve: list[dict], rf: float | None = None) -> dict:
+    """Risk/return statistics computed ON the portfolio return series.
+
+    These are series-level statistics (the daily returns of the whole
+    £100k model portfolio), never an average of individual stock stats.
+    Formulas (also shown in the site methodology):
+      daily returns   r_t = V_t / V_{t-1} - 1
+      ann. volatility  = std(r) x sqrt(252)          (sample std, ddof=1)
+      max drawdown     = min over t of V_t / max(V_0..V_t) - 1
+      beta vs FTSE     = cov(r_p, r_b) / var(r_b)
+      tracking error   = std(r_p - r_b) x sqrt(252)
+      ann. return (CAGR) = (1 + total_return)^(252 / n_obs) - 1
+      Sharpe           = (CAGR - risk-free) / ann. volatility
+    """
+    if not curve or len(curve) < 3:
+        return {}
+    v = pd.Series([c["portfolio"] for c in curve], dtype=float)
+    b = pd.Series([c["benchmark"] for c in curve], dtype=float)
+    rp = v.pct_change().dropna()
+    rb = b.pct_change().dropna()
+    n = len(curve)
+    total_return = float(v.iloc[-1] / v.iloc[0] - 1)
+    ann_return = (1 + total_return) ** (252 / n) - 1 if n > 0 else None
+    bench_total = float(b.iloc[-1] / b.iloc[0] - 1)
+    bench_ann = (1 + bench_total) ** (252 / n) - 1 if n > 0 else None
+    aligned = pd.concat([rp, rb.reindex(rp.index)], axis=1).dropna()
+    ann_vol = float(rp.std(ddof=1) * (252 ** 0.5)) if len(rp) > 1 else None
+    mdd = float((v / v.cummax() - 1.0).min())
+    beta = te = None
+    if len(aligned) > 1:
+        var_b = float(aligned.iloc[:, 1].var(ddof=1))
+        if var_b > 0:
+            beta = float(aligned.iloc[:, 0].cov(aligned.iloc[:, 1]) / var_b)
+        te = float((aligned.iloc[:, 0] - aligned.iloc[:, 1]).std(ddof=1) * (252 ** 0.5))
+    sharpe = None
+    if ann_vol and ann_vol > 0 and rf is not None:
+        sharpe = round((ann_return - rf) / ann_vol, 2)
+    return {
+        "n_obs": n,
+        "total_return_pct": round(total_return * 100, 2),
+        "ann_return_pct": round(ann_return * 100, 2) if ann_return is not None else None,
+        "bench_total_return_pct": round(bench_total * 100, 2),
+        "bench_ann_return_pct": round(bench_ann * 100, 2) if bench_ann is not None else None,
+        "ann_vol_pct": round(ann_vol * 100, 2) if ann_vol is not None else None,
+        "max_drawdown_pct": round(mdd * 100, 2),
+        "beta_vs_bench": round(beta, 2) if beta is not None else None,
+        "tracking_error_pct": round(te * 100, 2) if te is not None else None,
+        "sharpe": sharpe,
+        "rf": rf,
+    }
+
+
 def summarize(perf_rows: list[dict]) -> dict:
-    """Hit-rate and risk statistics across tracked notes."""
+    """Hit-rate and risk statistics across tracked notes.
+
+    Two distinct metrics, defined once and displayed verbatim on the site:
+      hit rate            = share of notes with alpha > 0 vs FTSE 100
+      directional accuracy = share of calls where price moved the way the
+                             recommendation said (BUY up / SELL down /
+                             HOLD within +/-10%) over the same window
+    """
     rows = [r for r in perf_rows if r]
     n = len(rows)
     if not n:
@@ -261,6 +352,8 @@ def summarize(perf_rows: list[dict]) -> dict:
     ]
     vols = [r["ann_vol_pct"] for r in rows if r.get("ann_vol_pct") is not None]
     mdds = [r["max_drawdown_pct"] for r in rows if r.get("max_drawdown_pct") is not None]
+    starts = [r["thesis_date"] for r in rows if r.get("thesis_date")]
+    ends = [r["end_date"] for r in rows if r.get("end_date")]
     return {
         "n": n,
         "hit_rate_pct": round(100 * len(wins) / n, 1),
@@ -271,6 +364,8 @@ def summarize(perf_rows: list[dict]) -> dict:
         "avg_ann_vol_pct": round(sum(vols) / len(vols), 2) if vols else None,
         "worst_drawdown_pct": min(mdds) if mdds else None,
         "total_trading_days": sum(r.get("trading_days", 0) for r in rows),
+        "window_start": min(starts) if starts else None,
+        "window_end": max(ends) if ends else None,
         "best": max(rows, key=lambda r: r["alpha_pct"])["ticker"],
         "worst": min(rows, key=lambda r: r["alpha_pct"])["ticker"],
     }

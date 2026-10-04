@@ -30,6 +30,10 @@ from pathlib import Path
 from . import audit, config, data
 
 FRED_GILT_10Y = "IRLTLT01GBM156N"  # Long-term govt bond yields, UK (OECD via FRED)
+FRED_RATE_3M = "IR3TIB01GBM156N"   # Immediate rates: 3-month interbank, UK (OECD via FRED)
+# (IR3MGBM156N was tested first: it does not exist on FRED -- 404. The 3-month
+# interbank/immediate rate is the practical short-tenor UK risk-free proxy; the
+# observation month is disclosed wherever it is used.)
 DAMODARAN_ERP_URL = (
     "https://www.stern.nyu.edu/~adamodar/pc/datasets/ctryprem.xlsx"
 )
@@ -106,6 +110,48 @@ def risk_free_rate() -> tuple[float | None, Provenance]:
             retrieved_at=_now(),
             derivation=f"UNAVAILABLE ({exc})",
             url="https://fred.stlouisfed.org/series/" + FRED_GILT_10Y,
+        )
+
+
+def short_rate_uk() -> tuple[float | None, Provenance]:
+    """Short-tenor UK risk-free rate for Sharpe ratios: 3-month immediate rate.
+
+    Falls back to the 10Y gilt (disclosed) when the 3-month series is
+    unavailable, so a Sharpe ratio is never computed from an invented rate.
+    """
+    try:
+        import pandas as pd
+
+        url = (
+            "https://fred.stlouisfed.org/graph/fredgraph.csv"
+            f"?id={FRED_RATE_3M}"
+        )
+        df = pd.read_csv(url)
+        col = df.columns[-1]
+        series = pd.to_numeric(df[col], errors="coerce").dropna()
+        val = float(series.iloc[-1]) / 100.0
+        obs_date = str(df.iloc[-1, 0])
+        return val, Provenance(
+            source="OECD 3-month immediate/interbank rate via FRED",
+            retrieved_at=_now(),
+            derivation=f"{FRED_RATE_3M} latest obs {obs_date}: {val:.2%} "
+                       "(monthly series; UK short-term risk-free proxy)",
+            url=url,
+        )
+    except Exception as exc:  # noqa: BLE001
+        rf10, prov10 = risk_free_rate()
+        if rf10 is not None:
+            return rf10, Provenance(
+                source="OECD long-term govt bond yield via FRED (fallback)",
+                retrieved_at=_now(),
+                derivation=(f"3M series {FRED_RATE_3M} unavailable ({exc}); "
+                            f"using 10Y gilt {rf10:.2%} as risk-free (disclosed fallback)"),
+                url=prov10.url,
+            )
+        return None, Provenance(
+            source="risk-free rate unavailable",
+            retrieved_at=_now(),
+            derivation=f"3M ({exc}) and 10Y ({prov10.derivation}) both unavailable",
         )
 
 

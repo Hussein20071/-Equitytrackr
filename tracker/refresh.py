@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import audit, config, data, performance, reporting, research, scenario
+from . import audit, config, data, fundamentals, performance, portfolio, reporting, research, scenario
 
 # Written into the deploy bundle each cycle; the dashboard JS polls it so an
 # open tab can toast "Prices updated — view now" and auto-reload on a timer.
@@ -52,9 +52,29 @@ def refresh_once(reason: str = "scheduled") -> dict:
     }
     perf_by_ticker = {r["ticker"]: r for r in perf_rows if r}
 
-    curve = performance.portfolio_curve(hist, bench)
     valid_rows = [r for r in perf_rows if r]
     summary = performance.summarize(valid_rows)
+
+    # Two separate windows, never mixed on screen:
+    #   live record  - portfolio from the first note's first publication
+    #   backtest     - current weights over the trailing 3 months (hypothetical)
+    first_pub = min(
+        (n.get("first_published_at") or n.get("published_at") or "")
+        for n in published
+    )[:10] if published else None
+    live_curve = performance.portfolio_curve(hist, bench, since=first_pub) \
+        if first_pub else []
+    backtest_curve = performance.portfolio_curve(hist, bench, months=3)
+    live_curve = portfolio.apply_inception_cost(live_curve)
+    backtest_curve = portfolio.apply_inception_cost(backtest_curve)
+
+    rf_short, rf_prov = fundamentals.short_rate_uk()
+    live_metrics = performance.portfolio_metrics(live_curve, rf=rf_short)
+    backtest_metrics = performance.portfolio_metrics(backtest_curve, rf=rf_short)
+
+    weights_table = portfolio.build_weights_table(quotes)
+    sector_mix = portfolio.portfolio_sector_weights()
+    ftse_sectors = portfolio.load_ftse_sector_weights()
 
     # Refresh-over-refresh diff: what actually moved since the previous cycle.
     prev_meta = {}
@@ -75,13 +95,14 @@ def refresh_once(reason: str = "scheduled") -> dict:
         n["ticker"]: performance.note_series(n, hist, bench)
         for n in published
     }
-    caption = performance.performance_caption(summary, curve)
+    caption = performance.performance_caption(summary, live_curve, "Live record")
 
     reporting.write_all_note_pages(published, perf_by_ticker, monthly,
-                                   series_by_ticker)
+                                   series_by_ticker, quotes=quotes)
     reporting.write_dashboard(
         quotes=quotes,
-        curve=curve,
+        curve=live_curve,
+        backtest_curve=backtest_curve,
         perf_rows=valid_rows,
         summary=summary,
         refresh_ts=now_ts,
@@ -92,6 +113,11 @@ def refresh_once(reason: str = "scheduled") -> dict:
         caption=caption,
         changes=changes,
         status_meta={"refreshed_at": now_ts},
+        live_metrics=live_metrics,
+        backtest_metrics=backtest_metrics,
+        weights_table=weights_table,
+        sector_mix=sector_mix,
+        ftse_sectors=ftse_sectors,
     )
     # Deployable static-site bundle (GitHub Pages root) + raw audit log
     reporting.write_publish_bundle()

@@ -4,37 +4,59 @@
   "name": "AstraZeneca",
   "status": "published",
   "analyst": "system",
-  "created_at": "2026-09-27T13:58:41.307831+00:00",
-  "published_at": "2026-09-27T13:58:41.327815+00:00",
+  "created_at": "2026-10-04T12:58:08.482132+00:00",
+  "published_at": "2026-10-04T12:58:08.994957+00:00",
   "published_by": "auto_notes",
-  "headline": "SELL: target GBP 60.03 vs price GBP 125.52 (-52.2% upside) on blended DCF/DDM/comps",
+  "headline": "SELL: target GBP 60.82 vs price GBP 118.70 (-48.8% upside) on blended DCF/DDM/comps",
   "thesis": {
-    "summary": "Systematic note generated from live data. Market price GBP 125.52 against a blended 12-month target of GBP 60.03 (weights {'dcf': 0.545, 'ddm': 0.182, 'comps_pe': 0.182, 'comps_ev_ebitda': 0.091}). The 2-stage FCF DCF on a base of GBP 6,542m latest-FY free cash flow (FX-converted from USD) values the shares at GBP 42.43. Gordon DDM on trailing DPS GBP 3.16 (g = ROE x retention) values them at GBP 46.07. Peer-median P/E of 20.2x applied to EPS of GBP 4.97 implies GBP 100.25. Reported FCF has trended up over the last 4 financial years (GBP 5,460m -> GBP 6,542m), which drives the growth path shown in the inputs table.",
+    "summary": "The model's blended 12-month target is GBP 60.82 against a market price of GBP 118.70 (-48.8%), which reads as SELL on the published recommendation bands. The target is a weighted blend of a 2-stage FCF DCF at GBP 45.05 per share, a Gordon DDM at GBP 48.66, peer multiples implying GBP 96.27 (P/E leg) -- the market is effectively pricing different assumptions than those frozen inputs, and the note shows exactly which. That gap exceeds the +/-30% guardrail, so the note is flagged 'Model outlier - under review' with the dcf leg driving it; the reverse DCF on the note page states what growth the market price implies instead.",
     "catalysts": [
-      "Convergence toward the blended target of GBP 60.03 (-52.2%) over the 3-month review window",
-      "Next FY results: reported FCF vs the latest-FY base used in the DCF"
+      "Next results: 2026-10-30 (Yahoo calendar) -- reported FCF vs the frozen base is the decisive input",
+      "Convergence (or divergence) vs the GBP 60.82 target over the 3-month review window"
     ],
     "risks": [
-      "Thesis invalidation: price sustaining beyond GBP 60.03 in the opposite direction of the recommendation for 10+ sessions",
-      "Fundamentals revision: a restated or materially different latest-FY FCF/net-debt base than the frozen inputs",
-      "Rate sensitivity: the CAPM cost of equity moves with the 10Y gilt yield"
+      "Fundamentals revision: a restated or materially different FCF/net-debt base than the frozen inputs",
+      "Rate sensitivity: the CAPM cost of equity moves with the gilt yield"
+    ],
+    "wrong_if": [
+      "Price sustains beyond GBP 60.82 for 10+ sessions in the opposite direction of the SELL call",
+      "Reported free cash flow diverges from the frozen base year by more than the growth path allows for",
+      "Peer multiples re-rate by more than one standard deviation of their trailing history"
     ]
   },
   "recommendation": "SELL",
-  "price_target_gbp": 60.03,
+  "price_target_gbp": 60.82,
   "target_weights": {
     "dcf": 0.545,
     "ddm": 0.182,
     "comps_pe": 0.182,
     "comps_ev_ebitda": 0.091
   },
-  "upside_pct": -52.17,
+  "upside_pct": -48.76,
+  "model_checks": {
+    "is_outlier": true,
+    "band_pct": 30.0,
+    "deviation_pct": -48.76,
+    "driver_leg": "dcf",
+    "driver_contribution_pct": -33.82,
+    "leg_deviation_pct": {
+      "dcf": -62.05,
+      "ddm": -59.01,
+      "comps_pe": -18.9,
+      "comps_ev_ebitda": -8.26
+    },
+    "definition": "flagged when |target / price - 1| > 30%; driver = the leg with the largest weighted contribution (weight x leg deviation) to the gap",
+    "checked_at": "2026-10-04T12:58:08.482132+00:00",
+    "price_used": 118.7
+  },
   "valuation_inputs": {
     "is_bank": false,
-    "beta_raw": 1.445,
-    "beta_adjusted": 1.2981500000000001,
+    "beta_raw": 1.3145,
+    "beta_adjusted": 1.210715,
     "dcf": {
-      "base_fcf_m": 6541.688604596213,
+      "base_fcf_m": 6548.1043033195365,
+      "base_fcf_used_m": 6548.1,
+      "base_fcf_source": "latest FY OCF - capex, FX-converted",
       "fcf_growth_path": [
         0.031,
         0.031,
@@ -43,184 +65,191 @@
         0.0078
       ],
       "terminal_growth": 0.025,
-      "wacc": 0.10583626500000001,
-      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.2981500000000001; implied pre-tax kd 5.9% disclosed only",
-      "net_debt_m": 16318.004550357819,
-      "shares_m": 1550.895914,
+      "wacc": 0.10206781649999999,
+      "wacc_source": "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.210715; implied pre-tax kd 5.9% disclosed only",
+      "net_debt_m": 16334.008277726829,
+      "shares_m": 1550.905742,
       "result": {
-        "value_per_share": 42.43,
-        "pv_explicit_m": 26282.7,
-        "pv_terminal_m": 55837.8,
-        "equity_value_m": 65802.4,
+        "value_per_share": 45.05,
+        "pv_explicit_m": 26564.9,
+        "pv_terminal_m": 59634.7,
+        "equity_value_m": 69865.7,
         "projections": [
           {
             "year": 1,
             "growth": 0.031,
-            "fcf_m": 6744.5,
-            "pv_m": 6099.0
+            "fcf_m": 6751.1,
+            "pv_m": 6125.8
           },
           {
             "year": 2,
             "growth": 0.031,
-            "fcf_m": 6953.6,
-            "pv_m": 5686.2
+            "fcf_m": 6960.4,
+            "pv_m": 5730.8
           },
           {
             "year": 3,
             "growth": 0.0233,
-            "fcf_m": 7115.6,
-            "pv_m": 5261.8
+            "fcf_m": 7122.6,
+            "pv_m": 5321.2
           },
           {
             "year": 4,
             "growth": 0.0155,
-            "fcf_m": 7225.9,
-            "pv_m": 4832.0
+            "fcf_m": 7233.0,
+            "pv_m": 4903.2
           },
           {
             "year": 5,
             "growth": 0.0078,
-            "fcf_m": 7282.2,
-            "pv_m": 4403.6
+            "fcf_m": 7289.4,
+            "pv_m": 4483.8
           }
         ]
       },
       "derivation": [
         "growth: FCF CAGR +6.2% over 3y, 50% damped -> +3.1% y1-2, tapering to ~0 by y5 (range floor/cap -5%/+15%)",
         "terminal g = min(rf 4.99%, explicit CAGR/2) = 2.50%",
-        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.2981500000000001; implied pre-tax kd 5.9% disclosed only",
+        "WACC: cost of equity (CAPM) used directly; no leverage assumption introduced. beta 1.210715; implied pre-tax kd 5.9% disclosed only",
         "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
-        "ke = 4.99% + 1.30 x 4.31% = 10.58%",
-        "beta = cov(r_stock, r_bench) / var(r_bench) = 1.45 over 52 weekly observations (Yahoo feed beta unavailable)",
-        "beta raw 1.45 -> adjusted 1.30 (0.67*raw + 0.33)"
+        "ke = 4.99% + 1.21 x 4.31% = 10.21%",
+        "beta = cov(r_stock, r_bench) / var(r_bench) = 1.31 over 104 weekly observations -- measured against the benchmark the portfolio tracks (^FTSE), per-name",
+        "beta raw 1.31 -> adjusted 1.21 (0.67*raw + 0.33)"
       ]
     },
     "ddm": {
       "dps_ttm_gbp": 3.15700005,
       "roe": 0.21965,
-      "payout": 0.6346337352980441,
-      "ke": 0.10583626500000001,
+      "payout": 0.634015951861425,
+      "ke": 0.10206781649999999,
       "g": 0.0349,
-      "value_per_share": 46.072,
+      "value_per_share": 48.6576,
       "derivation": [
-        "g capped: ROE x retention 8.03% from a single-year base exceeds the sustainable-perpetual cap 0.7 x risk-free = 3.49%",
-        "g = ROE 22.0% x retention 37% = 3.49% (raw 8.03%, capped)",
+        "g capped: ROE x retention 8.04% from a single-year base exceeds the sustainable-perpetual cap 0.7 x risk-free = 3.49%",
+        "g = ROE 22.0% x retention 37% = 3.49% (raw 8.04%, capped)",
         "D1 = DPS TTM 3.16 x (1+g) = 3.27",
-        "value = D1 / (ke 10.58% - g 3.49%) = 46.07"
+        "value = D1 / (ke 10.21% - g 3.49%) = 48.66"
       ]
     },
     "comps": {
       "entries": [
         {
           "peer": "GSK.L",
-          "ev_ebitda": 8.44788157695251,
-          "pe": 12.971284843152555
+          "ev_ebitda": 8.174976685308115,
+          "pe": 12.474651413676524
         },
         {
           "peer": "NVS",
-          "ev_ebitda": 13.205549514261213,
-          "pe": 19.98289798805457
+          "ev_ebitda": 12.70425452171246,
+          "pe": 19.164816393020597
         },
         {
           "peer": "PFE",
-          "ev_ebitda": 12.841911891633423,
-          "pe": 21.253481826957113
+          "ev_ebitda": 12.44210936219354,
+          "pe": 20.390029780683847
         },
         {
           "peer": "MRK",
-          "ev_ebitda": 14.357562152376065,
-          "pe": 20.32428079053645
+          "ev_ebitda": 13.82729017382387,
+          "pe": 19.503280097108043
         }
       ],
-      "median_ev_ebitda": 13.023730702947319,
-      "median_pe": 20.15358938929551,
-      "implied_price_pe": 100.25,
-      "implied_price_ev_ebitda": 113.07,
+      "median_ev_ebitda": 12.573181941952999,
+      "median_pe": 19.33404824506432,
+      "implied_price_pe": 96.27,
+      "implied_price_ev_ebitda": 108.9,
       "derivation": [
         "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E <= 60x, EV/EBITDA <= 30x)",
-        "P/E leg: median 20.2x x EPS 4.97 = 100.25",
-        "EV/EBITDA leg: median 13.0x x EBITDA 14,718m - net debt 16,318m = equity 175,361m / 1,551m shares = 113.07"
+        "P/E leg: median 19.3x x EPS 4.98 = 96.27",
+        "EV/EBITDA leg: median 12.6x x EBITDA 14,732m - net debt 16,334m = equity 168,895m / 1,551m shares = 108.90"
       ]
     }
   },
   "market_context": {
-    "price_gbp_at_publication": 125.52,
+    "price_gbp_at_publication": 118.7,
     "price_source": "Yahoo Finance (yfinance fast_info)",
-    "currency_note": "LSE quotes GBp; converted to GBP"
+    "currency_note": "LSE quotes GBp; converted to GBP",
+    "price_gbp_at_first_publication": 125.0
   },
+  "next_events": {
+    "earnings_date": "2026-10-30",
+    "source": "Yahoo Finance Ticker.calendar (next announced earnings date)",
+    "retrieved_at": "2026-10-04T12:58:08.723038+00:00"
+  },
+  "esg": null,
   "provenance": {
     "fx": {
       "source": "Yahoo Finance FX (yfinance)",
-      "retrieved_at": "2026-09-27T13:58:38.780931+00:00",
-      "derivation": "1 USD = 0.7545 GBP (spot GBPUSD=X inverted)",
+      "retrieved_at": "2026-10-04T12:43:41.296133+00:00",
+      "derivation": "1 USD = 0.7553 GBP (spot GBPUSD=X inverted)",
       "url": ""
     },
     "income_statement": {
       "source": "Yahoo Finance income_stmt (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:38.945364+00:00",
+      "retrieved_at": "2026-10-04T12:43:41.590020+00:00",
       "derivation": "converted USD->GBP at spot"
     },
     "cash_flow": {
       "source": "Yahoo Finance cash_flow (FY Operating Cash Flow - Capex)",
-      "retrieved_at": "2026-09-27T13:58:39.110974+00:00",
+      "retrieved_at": "2026-10-04T12:43:41.725566+00:00",
       "derivation": "FCF = OCF + capex (capex negative), USD->GBP"
     },
     "balance_sheet": {
       "source": "Yahoo Finance balance_sheet (latest FY)",
-      "retrieved_at": "2026-09-27T13:58:39.311968+00:00",
+      "retrieved_at": "2026-10-04T12:43:41.998224+00:00",
       "derivation": "net debt = total debt - cash & ST investments"
     },
     "dividends": {
       "source": "Yahoo Finance Ticker.dividends (actual payments)",
-      "retrieved_at": "2026-09-27T13:58:39.623431+00:00",
+      "retrieved_at": "2026-10-04T12:43:42.356901+00:00",
       "derivation": "DPS TTM = sum of payments dated within 365d (315.7000 in listing units, GBp->GBP /100); payout = DPS/eps where eps = NI/shares"
     },
     "risk_free_rate": {
       "source": "OECD long-term govt bond yield via FRED",
-      "retrieved_at": "2026-09-27T13:58:41.307831+00:00",
+      "retrieved_at": "2026-10-04T12:58:08.482132+00:00",
       "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
       "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
     },
     "cost_of_equity": [
       {
         "source": "OECD long-term govt bond yield via FRED",
-        "retrieved_at": "2026-09-27T13:58:41.206129+00:00",
+        "retrieved_at": "2026-10-04T12:58:08.391087+00:00",
         "derivation": "IRLTLT01GBM156N latest obs 2026-08-01: 4.99%",
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01GBM156N"
       },
       {
         "source": "Damodaran country risk premium (Western Europe)",
-        "retrieved_at": "2026-09-27T13:58:41.206129+00:00",
+        "retrieved_at": "2026-10-04T12:58:08.391087+00:00",
         "derivation": "ERP 4.31% (Jan 2025 dataset, mature Western Europe)",
         "url": "https://pages.stern.nyu.edu/~adamodar/"
       },
       {
         "source": "CAPM",
-        "retrieved_at": "2026-09-27T13:58:41.206129+00:00",
-        "derivation": "ke = 4.99% + 1.30 x 4.31% = 10.58%"
+        "retrieved_at": "2026-10-04T12:58:08.391087+00:00",
+        "derivation": "ke = 4.99% + 1.21 x 4.31% = 10.21%"
       },
       {
-        "source": "OLS beta: AZN.L vs ^FTSE weekly returns, 1y",
-        "retrieved_at": "2026-09-27T13:58:41.034088+00:00",
-        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = 1.45 over 52 weekly observations (Yahoo feed beta unavailable)"
+        "source": "OLS beta: AZN.L vs ^FTSE weekly returns, 2y",
+        "retrieved_at": "2026-10-04T12:58:08.281426+00:00",
+        "derivation": "beta = cov(r_stock, r_bench) / var(r_bench) = 1.31 over 104 weekly observations -- measured against the benchmark the portfolio tracks (^FTSE), per-name"
       },
       {
         "source": "Blume (1971) beta adjustment + 0.40 beta floor",
-        "retrieved_at": "2026-09-27T13:58:41.036120+00:00",
-        "derivation": "beta raw 1.45 -> adjusted 1.30 (0.67*raw + 0.33)"
+        "retrieved_at": "2026-10-04T12:58:08.281426+00:00",
+        "derivation": "beta raw 1.31 -> adjusted 1.21 (0.67*raw + 0.33)"
       }
     ],
     "peer_multiples": [
       "multiples computed per peer: EV = price x shares + net debt; EV/EBITDA and P/E on latest FY, all FX-converted to GBP; true median over multiples within the not-meaningful caps (P/E <= 60x, EV/EBITDA <= 30x)",
-      "P/E leg: median 20.2x x EPS 4.97 = 100.25",
-      "EV/EBITDA leg: median 13.0x x EBITDA 14,718m - net debt 16,318m = equity 175,361m / 1,551m shares = 113.07"
+      "P/E leg: median 19.3x x EPS 4.98 = 96.27",
+      "EV/EBITDA leg: median 12.6x x EBITDA 14,732m - net debt 16,334m = equity 168,895m / 1,551m shares = 108.90"
     ],
     "blend": [
-      "blend: dcf 42.43 x 55%",
-      "blend: ddm 46.07 x 18%",
-      "blend: comps_pe 100.25 x 18%",
-      "blend: comps_ev_ebitda 113.07 x 9%"
+      "blend: dcf 45.05 x 55%",
+      "blend: ddm 48.66 x 18%",
+      "blend: comps_pe 96.27 x 18%",
+      "blend: comps_ev_ebitda 108.90 x 9%"
     ],
     "model_choices": {
       "dcf_weight": 0.6,
@@ -233,47 +262,17 @@
   },
   "audit_refs": [
     {
-      "ts": "2026-09-27T13:54:54.347243+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "AZN.L"
-      ],
-      "status": "ok",
-      "currency": "USD",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:54:54.593454+00:00",
+      "ts": "2026-10-04T12:43:42.508545+00:00",
       "event": "fetch_quotes",
       "tickers": [
         "AZN.L"
       ],
       "status": "ok",
       "n": 1,
-      "elapsed_s": 0.22
+      "elapsed_s": 0.14
     },
     {
-      "ts": "2026-09-27T13:55:05.827587+00:00",
-      "event": "fetch_quotes",
-      "tickers": [
-        "AZN.L"
-      ],
-      "status": "ok",
-      "n": 1,
-      "elapsed_s": 0.23
-    },
-    {
-      "ts": "2026-09-27T13:58:39.623431+00:00",
-      "event": "fetch_fundamentals",
-      "tickers": [
-        "AZN.L"
-      ],
-      "status": "ok",
-      "currency": "USD",
-      "warnings": []
-    },
-    {
-      "ts": "2026-09-27T13:58:39.800305+00:00",
+      "ts": "2026-10-04T12:44:11.604456+00:00",
       "event": "fetch_quotes",
       "tickers": [
         "AZN.L"
@@ -281,11 +280,78 @@
       "status": "ok",
       "n": 1,
       "elapsed_s": 0.16
+    },
+    {
+      "ts": "2026-10-04T12:47:35.883825+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.47
+    },
+    {
+      "ts": "2026-10-04T12:47:46.491325+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.17
+    },
+    {
+      "ts": "2026-10-04T12:54:17.785591+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.49
+    },
+    {
+      "ts": "2026-10-04T12:54:25.863418+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.15
+    },
+    {
+      "ts": "2026-10-04T12:57:06.348275+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.18
+    },
+    {
+      "ts": "2026-10-04T12:58:07.248623+00:00",
+      "event": "fetch_quotes",
+      "tickers": [
+        "AZN.L"
+      ],
+      "status": "ok",
+      "n": 1,
+      "elapsed_s": 0.48
     }
   ],
   "benchmark": "^FTSE",
   "review_period_months": 3,
-  "review_due_at": "2026-09-27T13:58:41.322763+00:00",
-  "addenda": [],
-  "publication_audit_id": "2026-09-27T13:58:41.322763+00:00"
+  "review_due_at": "2026-10-04T12:58:08.994957+00:00",
+  "addenda": [
+    {
+      "kind": "methodology",
+      "ts": "2026-10-04T12:43:49.489845+00:00",
+      "text": "2026-10-04 model sanity review: (1) beta estimation window widened from 52 to ~104 weekly observations (2y) after the 1y window pinned BP and SHEL at the 0.40 beta floor; (2) DCF base FCF now falls back to a normalised multi-year average when the latest FY is missing/non-finite, and the DCF is excluded with an explicit reason when trailing FCF is non-positive; (3) a +/-30% model-outlier guardrail now runs at publication and flags the driving leg. Inputs were re-frozen from refetched live data; the tracked window and hit counting still start at first publication (2026-09-19)."
+    }
+  ],
+  "first_published_at": "2026-09-19T08:47:30.981141+00:00",
+  "publication_audit_id": "2026-10-04T12:58:08.994957+00:00"
 }
