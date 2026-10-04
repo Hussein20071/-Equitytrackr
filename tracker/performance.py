@@ -277,12 +277,16 @@ def portfolio_metrics(curve: list[dict], rf: float | None = None) -> dict:
 
     These are series-level statistics (the daily returns of the whole
     £100k model portfolio), never an average of individual stock stats.
+    Total return is measured from the £100 index base, so the stated
+    inception transaction-cost drag (the curve starts at 99.4 net) is
+    included — the investor-realised figure, matching the chart caption.
     Formulas (also shown in the site methodology):
       daily returns   r_t = V_t / V_{t-1} - 1
       ann. volatility  = std(r) x sqrt(252)          (sample std, ddof=1)
       max drawdown     = min over t of V_t / max(V_0..V_t) - 1
       beta vs FTSE     = cov(r_p, r_b) / var(r_b)
       tracking error   = std(r_p - r_b) x sqrt(252)
+      total return     = V_last / 100 - 1   (100 = gross index base)
       ann. return (CAGR) = (1 + total_return)^(252 / n_obs) - 1
       Sharpe           = (CAGR - risk-free) / ann. volatility
     """
@@ -293,9 +297,9 @@ def portfolio_metrics(curve: list[dict], rf: float | None = None) -> dict:
     rp = v.pct_change().dropna()
     rb = b.pct_change().dropna()
     n = len(curve)
-    total_return = float(v.iloc[-1] / v.iloc[0] - 1)
+    total_return = float(v.iloc[-1] / 100.0 - 1)
     ann_return = (1 + total_return) ** (252 / n) - 1 if n > 0 else None
-    bench_total = float(b.iloc[-1] / b.iloc[0] - 1)
+    bench_total = float(b.iloc[-1] / 100.0 - 1)
     bench_ann = (1 + bench_total) ** (252 / n) - 1 if n > 0 else None
     aligned = pd.concat([rp, rb.reindex(rp.index)], axis=1).dropna()
     ann_vol = float(rp.std(ddof=1) * (252 ** 0.5)) if len(rp) > 1 else None
